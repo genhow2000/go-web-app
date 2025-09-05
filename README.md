@@ -1,224 +1,204 @@
-# Go 簡單應用
+# Go Web Application with Modern Dashboard
 
-這是一個完整的 Go 語言 Web 應用，包含 PostgreSQL 資料庫，使用 Docker 進行容器化部署。
+一個基於Go語言開發的現代化Web應用程序，具有類似mfs_jy的儀表板界面。
 
-## 功能
+## 🚀 功能特色
 
-- 提供基本的 HTTP 服務器
-- 首頁 API 端點 (`/`)
-- 健康檢查端點 (`/health`)
-- 用戶管理 API (`/users`)
-- PostgreSQL 資料庫整合
-- 支援環境變數配置
+- **現代化儀表板** - 類似mfs_jy的專業界面設計
+- **用戶認證系統** - JWT token認證
+- **PostgreSQL數據庫** - 完整的數據持久化
+- **日誌系統** - 使用logrus的專業日誌記錄
+- **Docker容器化** - 一鍵部署
+- **響應式設計** - 支持桌面和移動設備
+- **實時統計** - 動態數據展示
 
-## 文件結構
+## 📋 技術棧
 
+- **後端**: Go 1.21 + Gin框架
+- **數據庫**: PostgreSQL
+- **前端**: HTML5 + CSS3 + JavaScript + Font Awesome
+- **容器化**: Docker + Docker Compose
+- **日誌**: Logrus
+- **認證**: JWT
+
+## 🛠️ 快速開始
+
+### 使用Docker（推薦）
+
+1. 克隆倉庫
+```bash
+git clone https://github.com/genhow2000/go-web-app.git
+cd go-web-app
 ```
-go/
-├── main.go              # 主應用程序（包含資料庫操作）
-├── go.mod              # Go 模組文件
-├── go.sum              # 依賴校驗文件
-├── Dockerfile          # Docker 構建文件
-├── docker-compose.yml  # Docker Compose 配置（包含 PostgreSQL）
-└── README.md           # 說明文件
+
+2. 啟動服務
+```bash
+docker-compose up -d
 ```
 
-## 技術棧
-
-- **後端**: Go 1.21
-- **資料庫**: PostgreSQL 15
-- **容器化**: Docker & Docker Compose
-- **資料庫驅動**: github.com/lib/pq
-
-## 快速開始
-
-### 使用 Docker Compose（推薦）
-
-1. 進入 go 目錄：
-
-   ```bash
-   cd go
-   ```
-
-2. 構建並啟動應用：
-
-   ```bash
-   docker-compose up --build
-   ```
-
-3. 訪問應用：
-
-   - 首頁：http://localhost:8080
-   - 健康檢查：http://localhost:8080/health
-   - 用戶列表：http://localhost:8080/users
-
-4. 測試用戶 API：
-
-   ```bash
-   # 創建新用戶
-   curl -X POST http://localhost:8080/users \
-     -H "Content-Type: application/json" \
-     -d '{"name": "張三", "email": "zhang@example.com"}'
-
-   # 獲取所有用戶
-   curl http://localhost:8080/users
-   ```
-
-### 使用 Docker
-
-1. 構建映像：
-
-   ```bash
-   docker build -t go-simple-app .
-   ```
-
-2. 運行容器：
-   ```bash
-   docker run -p 8080:8080 go-simple-app
-   ```
+3. 訪問應用
+- 應用地址: http://localhost:8080
+- 登入頁面: http://localhost:8080/login
+- 註冊頁面: http://localhost:8080/register
 
 ### 本地開發
 
-1. 確保已安裝 Go 1.21 或更高版本
-
-2. 運行應用：
-   ```bash
-   go run main.go
-   ```
-
-## API 端點
-
-### GET /
-
-返回歡迎訊息和應用狀態。
-
-**響應示例：**
-
-```json
-{
-  "message": "歡迎來到 Go 服務器！",
-  "status": "running",
-  "version": "1.0.0"
-}
-```
-
-### GET /health
-
-健康檢查端點，包含資料庫連接狀態。
-
-**響應示例：**
-
-```json
-{
-  "status": "healthy",
-  "service": "go-simple-app",
-  "database": "connected"
-}
-```
-
-### GET /users
-
-獲取所有用戶列表。
-
-**響應示例：**
-
-```json
-{
-  "users": [
-    {
-      "id": 1,
-      "name": "張三",
-      "email": "zhang@example.com",
-      "created_at": "2024-01-01T10:00:00Z"
-    }
-  ],
-  "count": 1
-}
-```
-
-### POST /users
-
-創建新用戶。
-
-**請求體：**
-
-```json
-{
-  "name": "張三",
-  "email": "zhang@example.com"
-}
-```
-
-**響應示例：**
-
-```json
-{
-  "message": "用戶創建成功",
-  "user": {
-    "id": 1,
-    "name": "張三",
-    "email": "zhang@example.com"
-  }
-}
-```
-
-## 環境變數
-
-### 應用配置
-
-- `PORT`: 服務器端口（默認：8080）
-
-### 資料庫配置
-
-- `DB_HOST`: 資料庫主機（默認：localhost）
-- `DB_PORT`: 資料庫端口（默認：5432）
-- `DB_USER`: 資料庫用戶名（默認：postgres）
-- `DB_PASSWORD`: 資料庫密碼（默認：password）
-- `DB_NAME`: 資料庫名稱（默認：goapp）
-
-## 停止應用
-
-使用 Docker Compose：
-
+1. 安裝Go 1.21+
+2. 安裝PostgreSQL
+3. 設置環境變量
 ```bash
-docker-compose down
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=postgres
+export DB_PASSWORD=password
+export DB_NAME=goapp
+export JWT_SECRET=your-secret-key
 ```
 
-使用 Docker：
-
+4. 運行應用
 ```bash
-docker stop go-simple-app
-docker stop go-postgres
+go mod tidy
+go run main.go
 ```
 
-## 資料庫管理
+## 📁 項目結構
 
-### 連接資料庫
+```
+go-web-app/
+├── config/          # 配置管理
+├── controllers/     # 控制器層
+├── database/        # 數據庫連接
+├── logger/          # 日誌系統
+├── middleware/      # 中間件
+├── models/          # 數據模型
+├── routes/          # 路由配置
+├── services/        # 業務邏輯
+├── templates/       # HTML模板
+├── docker-compose.yml
+├── Dockerfile
+└── main.go
+```
 
+## 🔧 配置說明
+
+### 環境變量
+
+| 變量名 | 默認值 | 說明 |
+|--------|--------|------|
+| PORT | 8080 | 服務端口 |
+| HOST | 0.0.0.0 | 服務地址 |
+| DB_HOST | localhost | 數據庫地址 |
+| DB_PORT | 5432 | 數據庫端口 |
+| DB_USER | postgres | 數據庫用戶名 |
+| DB_PASSWORD | password | 數據庫密碼 |
+| DB_NAME | goapp | 數據庫名稱 |
+| JWT_SECRET | your-secret-key | JWT密鑰 |
+
+## 📊 API接口
+
+### 認證接口
+- `POST /register` - 用戶註冊
+- `POST /login` - 用戶登入
+- `POST /logout` - 用戶登出
+
+### 用戶管理
+- `GET /users` - 獲取所有用戶
+- `GET /users/:id` - 獲取特定用戶
+- `POST /users` - 創建用戶
+- `PUT /users/:id` - 更新用戶
+- `DELETE /users/:id` - 刪除用戶
+
+### 系統接口
+- `GET /health` - 健康檢查
+- `GET /dashboard` - 儀表板頁面
+
+## 🎨 界面預覽
+
+### 登入頁面
+- 現代化漸層背景設計
+- 響應式表單布局
+- 實時錯誤提示
+
+### 儀表板
+- 側邊欄導航菜單
+- 統計卡片展示
+- 實時數據更新
+- 用戶列表管理
+
+## 📝 日誌系統
+
+應用使用logrus提供專業的日誌記錄：
+
+- **文件日誌**: `logs/YYYY-MM-DD.log`
+- **控制台日誌**: 實時輸出
+- **日誌級別**: Debug, Info, Warn, Error, Fatal
+- **JSON格式**: 便於日誌分析
+
+查看日誌：
 ```bash
-# 使用 Docker 連接 PostgreSQL
-docker exec -it go-postgres psql -U postgres -d goapp
+# Docker環境
+docker logs go-simple-app
+
+# 本地文件
+tail -f logs/2025-09-03.log
 ```
 
-### 查看資料表
+## 🐳 Docker部署
 
-```sql
--- 查看所有表
-\dt
-
--- 查看用戶表結構
-\d users
-
--- 查看用戶數據
-SELECT * FROM users;
-```
-
-### 重置資料庫
-
+### 構建鏡像
 ```bash
-# 停止並刪除所有容器和數據
-docker-compose down -v
-
-# 重新啟動
-docker-compose up --build
+docker build -t go-web-app .
 ```
+
+### 運行容器
+```bash
+docker-compose up -d
+```
+
+### 查看日誌
+```bash
+docker-compose logs -f
+```
+
+## 🔒 安全特性
+
+- JWT token認證
+- 密碼bcrypt加密
+- CORS跨域保護
+- SQL注入防護
+- XSS防護
+
+## 📈 性能優化
+
+- 數據庫連接池
+- 中間件緩存
+- 靜態資源優化
+- 響應式設計
+
+## 🤝 貢獻指南
+
+1. Fork 本倉庫
+2. 創建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 開啟 Pull Request
+
+## 📄 許可證
+
+本項目採用 MIT 許可證 - 查看 [LICENSE](LICENSE) 文件了解詳情
+
+## 👨‍💻 作者
+
+**genhow2000**
+- GitHub: [@genhow2000](https://github.com/genhow2000)
+
+## 🙏 致謝
+
+- [Gin Web Framework](https://gin-gonic.com/)
+- [Logrus](https://github.com/sirupsen/logrus)
+- [Font Awesome](https://fontawesome.com/)
+- [PostgreSQL](https://www.postgresql.org/)
+
+---
+
+⭐ 如果這個項目對你有幫助，請給個Star！
