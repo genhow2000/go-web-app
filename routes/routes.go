@@ -13,6 +13,7 @@ import (
 func SetupRoutes(
 	authController *controllers.AuthController,
 	userController *controllers.UserController,
+	adminController *controllers.AdminController,
 	authService *services.AuthService,
 ) *gin.Engine {
 	r := gin.Default()
@@ -79,6 +80,32 @@ func SetupRoutes(
 		protected.POST("/users", userController.CreateUser)
 		protected.PUT("/users/:id", userController.UpdateUser)
 		protected.DELETE("/users/:id", userController.DeleteUser)
+	}
+
+	// 管理員專用路由
+	admin := r.Group("/admin")
+	admin.Use(middleware.AuthMiddleware(authService))
+	admin.Use(middleware.AdminMiddleware())
+	{
+		// 管理員頁面
+		admin.GET("/dashboard", adminController.ShowAdminDashboard)
+		admin.GET("/users", adminController.ShowUserManagement)
+		admin.GET("/users/create", adminController.ShowCreateUser)
+		admin.GET("/users/:id/edit", adminController.ShowEditUser)
+
+		// 管理員 API
+		adminAPI := admin.Group("/api")
+		{
+			adminAPI.GET("/users", adminController.GetAllUsers)
+			adminAPI.GET("/users/role/:role", adminController.GetUsersByRole)
+			adminAPI.GET("/users/:id", adminController.GetUserByID)
+			adminAPI.POST("/users", adminController.CreateUser)
+			adminAPI.PUT("/users/:id", adminController.UpdateUser)
+			adminAPI.PUT("/users/:id/status", adminController.UpdateUserStatus)
+			adminAPI.PUT("/users/:id/role", adminController.UpdateUserRole)
+			adminAPI.DELETE("/users/:id", adminController.DeleteUser)
+			adminAPI.GET("/stats", adminController.GetUserStats)
+		}
 	}
 
 	// 兼容舊路由（需要認證）

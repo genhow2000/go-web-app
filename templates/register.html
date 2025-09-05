@@ -177,6 +177,17 @@
                 <input type="password" id="confirm-password" name="confirm-password" required>
             </div>
             
+            <div class="form-group">
+                <label for="role">註冊類型</label>
+                <select id="role" name="role" style="width: 100%; padding: 0.75rem; border: 2px solid #e1e5e9; border-radius: 5px; font-size: 1rem; background: white;">
+                    <option value="customer">客戶</option>
+                    <option value="admin">管理員</option>
+                </select>
+                <small style="color: #666; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+                    注意：管理員註冊需要審核，建議先註冊為客戶
+                </small>
+            </div>
+            
             <button type="submit" class="register-btn" id="register-btn">
                 註冊
             </button>
@@ -200,6 +211,7 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
+            const role = document.getElementById('role').value;
             const registerBtn = document.getElementById('register-btn');
             const loading = document.getElementById('loading');
             const errorMessage = document.getElementById('error-message');
@@ -232,7 +244,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ name, email, password, role })
                 });
                 
                 const data = await response.json();

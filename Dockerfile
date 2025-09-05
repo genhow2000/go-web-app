@@ -16,6 +16,12 @@ COPY . .
 # 整理依賴並構建應用
 RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
+# 構建遷移工具
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o migrate cmd/migrate/main.go
+
+# 構建管理員初始化工具
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o init-admin cmd/init-admin/main.go
+
 # 使用輕量級的 alpine 映像作為運行階段
 FROM alpine:latest
 
@@ -27,7 +33,10 @@ WORKDIR /root/
 
 # 從構建階段複製二進制文件和模板
 COPY --from=builder /app/main .
+COPY --from=builder /app/migrate .
+COPY --from=builder /app/init-admin .
 COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/migrations ./migrations
 
 # 暴露端口
 EXPOSE 8080

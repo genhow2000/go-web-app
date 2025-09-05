@@ -26,6 +26,7 @@ type RegisterRequest struct {
 	Name     string `json:"name" binding:"required,min=2"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
+	Role     string `json:"role"` // 可選，默認為 "customer"
 }
 
 type LoginResponse struct {
@@ -44,6 +45,7 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 	logger.Info("開始用戶註冊流程", logrus.Fields{
 		"email": req.Email,
 		"name":  req.Name,
+		"role":  req.Role,
 	})
 
 	// 檢查用戶是否已存在
@@ -53,6 +55,21 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 			"email": req.Email,
 		})
 		return nil, errors.New("該電子郵件已被註冊")
+	}
+
+	// 設置默認角色
+	role := req.Role
+	if role == "" {
+		role = "customer"
+	}
+
+	// 驗證角色
+	if role != "customer" && role != "admin" {
+		logger.Warn("註冊失敗：無效的角色", logrus.Fields{
+			"email": req.Email,
+			"role":  req.Role,
+		})
+		return nil, errors.New("無效的角色")
 	}
 
 	// 雜湊密碼
@@ -69,6 +86,8 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: string(hashedPassword),
+		Role:     role,
+		IsActive: true, // 默認啟用
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
@@ -86,6 +105,7 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 		"user_id": user.ID,
 		"email":   user.Email,
 		"name":    user.Name,
+		"role":    user.Role,
 	})
 	
 	return user, nil
@@ -104,6 +124,15 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 			"error": err.Error(),
 		})
 		return nil, errors.New("用戶不存在或密碼錯誤")
+	}
+
+	// 檢查帳戶是否啟用
+	if !user.IsActive {
+		logger.Warn("登入失敗：帳戶已停用", logrus.Fields{
+			"email": req.Email,
+			"user_id": user.ID,
+		})
+		return nil, errors.New("帳戶已停用，請聯繫管理員")
 	}
 
 	// 驗證密碼
@@ -132,6 +161,7 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 		"user_id": user.ID,
 		"email":   user.Email,
 		"name":    user.Name,
+		"role":    user.Role,
 	})
 
 	return &LoginResponse{
@@ -142,11 +172,13 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 
 func (s *AuthService) generateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"id":    user.ID,
-		"name":  user.Name,
-		"email": user.Email,
-		"exp":   time.Now().Add(time.Duration(s.config.ExpiresIn) * time.Hour).Unix(),
-		"iat":   time.Now().Unix(),
+		"id":       user.ID,
+		"name":     user.Name,
+		"email":    user.Email,
+		"role":     user.Role,
+		"is_active": user.IsActive,
+		"exp":      time.Now().Add(time.Duration(s.config.ExpiresIn) * time.Hour).Unix(),
+		"iat":      time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -181,4 +213,58 @@ func (s *AuthService) ValidateToken(tokenString string) (*models.User, error) {
 	}
 
 	return nil, errors.New("無效的 token")
+}
+
+// 檢查用戶是否為管理員
+func (s *AuthService) IsAdmin(user *models.User) bool {
+	return user.Role == "admin"
+}
+
+// 檢查用戶是否為客戶
+func (s *AuthService) IsCustomer(user *models.User) bool {
+	return user.Role == "customer"
+}
+
+// 創建管理員用戶（僅供系統初始化使用）
+func (s *AuthService) CreateAdmin(name, email, password string) (*models.User, error) {
+	logger.Info("創建管理員用戶", logrus.Fields{
+		"email": email,
+		"name":  name,
+	})
+
+	// 檢查是否已存在
+	existingUser, _ := s.userRepo.GetByEmail(email)
+	if existingUser != nil {
+		return nil, errors.New("該電子郵件已被註冊")
+	}
+
+	// 雜湊密碼
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("密碼處理失敗")
+	}
+
+	// 創建管理員用戶
+	user := &models.User{
+		Name:     name,
+		Email:    email,
+		Password: string(hashedPassword),
+		Role:     "admin",
+		IsActive: true,
+	}
+
+	if err := s.userRepo.Create(user); err != nil {
+		return nil, err
+	}
+
+	// 清除密碼
+	user.Password = ""
+	
+	logger.Info("管理員用戶創建成功", logrus.Fields{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"name":    user.Name,
+	})
+	
+	return user, nil
 }

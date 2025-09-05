@@ -46,15 +46,17 @@ func main() {
 	// 初始化 Service
 	authService := services.NewAuthService(userRepo, &cfg.JWT)
 	userService := services.NewUserService(userRepo)
+	adminService := services.NewAdminService(userRepo)
 	logger.Info("Service層初始化完成")
 
 	// 初始化 Controller
 	authController := controllers.NewAuthController(authService)
 	userController := controllers.NewUserController(userService)
+	adminController := controllers.NewAdminController(adminService)
 	logger.Info("Controller層初始化完成")
 
 	// 設置路由
-	router := routes.SetupRoutes(authController, userController, authService)
+	router := routes.SetupRoutes(authController, userController, adminController, authService)
 
 	// 設置 Gin 模式
 	if cfg.Server.Host == "0.0.0.0" {

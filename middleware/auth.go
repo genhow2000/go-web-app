@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 	"go-simple-app/services"
+	"go-simple-app/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -92,6 +93,100 @@ func OptionalAuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 			if user, err := authService.ValidateToken(tokenString); err == nil {
 				c.Set("user", user)
 			}
+		}
+
+		c.Next()
+	}
+}
+
+// 管理員權限中間件
+func AdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, exists := c.Get("user")
+		if !exists {
+			if c.Request.Header.Get("Accept") == "text/html" {
+				c.Redirect(http.StatusFound, "/login")
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": "未認證的用戶",
+				})
+			}
+			c.Abort()
+			return
+		}
+
+		// 檢查用戶角色
+		if userObj, ok := user.(*models.User); ok {
+			if userObj.Role != "admin" {
+				if c.Request.Header.Get("Accept") == "text/html" {
+					c.HTML(http.StatusForbidden, "error.html", gin.H{
+						"error": "權限不足，需要管理員權限",
+					})
+				} else {
+					c.JSON(http.StatusForbidden, gin.H{
+						"error": "權限不足，需要管理員權限",
+					})
+				}
+				c.Abort()
+				return
+			}
+		} else {
+			if c.Request.Header.Get("Accept") == "text/html" {
+				c.Redirect(http.StatusFound, "/login")
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": "無效的用戶信息",
+				})
+			}
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// 客戶權限中間件
+func CustomerMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, exists := c.Get("user")
+		if !exists {
+			if c.Request.Header.Get("Accept") == "text/html" {
+				c.Redirect(http.StatusFound, "/login")
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": "未認證的用戶",
+				})
+			}
+			c.Abort()
+			return
+		}
+
+		// 檢查用戶角色
+		if userObj, ok := user.(*models.User); ok {
+			if userObj.Role != "customer" && userObj.Role != "admin" {
+				if c.Request.Header.Get("Accept") == "text/html" {
+					c.HTML(http.StatusForbidden, "error.html", gin.H{
+						"error": "權限不足",
+					})
+				} else {
+					c.JSON(http.StatusForbidden, gin.H{
+						"error": "權限不足",
+					})
+				}
+				c.Abort()
+				return
+			}
+		} else {
+			if c.Request.Header.Get("Accept") == "text/html" {
+				c.Redirect(http.StatusFound, "/login")
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error": "無效的用戶信息",
+				})
+			}
+			c.Abort()
+			return
 		}
 
 		c.Next()
