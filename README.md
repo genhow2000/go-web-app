@@ -1,6 +1,6 @@
 # Go Web Application with Modern Dashboard
 
-一個基於Go語言開發的現代化Web應用程序，具有類似mfs_jy的儀表板界面。
+一個基於Go語言開發的現代化Web應用程序，具儀表板界面。
 
 ## 🚀 功能特色
 
