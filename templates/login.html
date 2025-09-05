@@ -221,9 +221,9 @@
                         localStorage.setItem('auth_token', data.token);
                     }
                     
-                    // 重定向到首頁
+                    // 重定向到儀表板，攜帶token
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = '/dashboard?token=' + data.token;
                     }, 1000);
                 } else {
                     errorMessage.textContent = data.error || '登入失敗，請檢查您的憑證';

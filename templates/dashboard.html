@@ -602,7 +602,19 @@
         let sidebarOpen = true;
         
         // 檢查認證狀態
-        const token = localStorage.getItem('auth_token');
+        let token = localStorage.getItem('auth_token');
+        
+        // 如果localStorage沒有token，嘗試從URL參數獲取
+        if (!token) {
+            const urlParams = new URLSearchParams(window.location.search);
+            token = urlParams.get('token');
+            if (token) {
+                localStorage.setItem('auth_token', token);
+                // 清除URL中的token參數
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+        
         if (!token) {
             window.location.href = '/login';
         }
