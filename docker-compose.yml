@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 資料庫
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: goapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    container_name: go-postgres
+
+  # Go 應用
+  go-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=goapp
+    volumes:
+      - ./logs:/root/logs  # 映射日誌目錄到本地
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    container_name: go-simple-app
+
+volumes:
+  postgres_data:
