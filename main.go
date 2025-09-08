@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"go-simple-app/config"
 	"go-simple-app/controllers"
 	"go-simple-app/database"
@@ -65,7 +66,12 @@ func main() {
 	}
 
 	// 啟動服務器
-	addr := cfg.Server.Host + ":" + cfg.Server.Port
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = cfg.Server.Port
+	}
+	
+	addr := ":" + port
 	logger.Info("服務器準備啟動", logrus.Fields{
 		"address": addr,
 		"mode":    gin.Mode(),

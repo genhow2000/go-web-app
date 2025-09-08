@@ -1,0 +1,13 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-f",
+        "Dockerfile.simple",
+        "-t",
+        "gcr.io/fleet-day-383710/go-simple-app:latest",
+        ".",
+      ]
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/fleet-day-383710/go-simple-app:latest"]
