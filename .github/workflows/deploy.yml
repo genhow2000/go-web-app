@@ -1,0 +1,32 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Google Cloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: fleet-day-383710
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+        
+    - name: Configure Docker for GCR
+      run: gcloud auth configure-docker
+      
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud builds submit --config cloudbuild.yaml .
+        
+    - name: Show service URL
+      run: |
+        echo "Service deployed successfully!"
+        echo "URL: https://go-simple-app-313144253156.asia-east1.run.app"
