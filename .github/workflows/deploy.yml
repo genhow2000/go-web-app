@@ -2,32 +2,32 @@ name: Deploy to Google Cloud Run
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Setup Google Cloud CLI
-      uses: google-github-actions/setup-gcloud@v2
-        
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker
-      
-    - name: Deploy to Cloud Run
-      run: |
-        gcloud builds submit --config cloudbuild.yaml . --async
-        
-    - name: Show service URL
-      run: |
-        echo "Service deployed successfully!"
-        echo "URL: https://go-simple-app-313144253156.asia-east1.run.app"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud builds submit --config cloudbuild.yaml . --async
+
+      - name: Show service URL
+        run: |
+          echo "Service deployed successfully!"
+          echo "URL: https://go-simple-app-313144253156.asia-east1.run.app"
