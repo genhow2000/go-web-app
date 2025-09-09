@@ -17,12 +17,14 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host     string
-	Port     string
-	User     string
+	Type string // "sqlite" or "postgres"
+	Host string
+	Port string
+	User string
 	Password string
-	Name     string
-	SSLMode  string
+	Name string
+	SSLMode string
+	Path string // SQLite database file path
 }
 
 type JWTConfig struct {
@@ -37,12 +39,14 @@ func Load() *Config {
 			Host: getEnv("HOST", "0.0.0.0"),
 		},
 		Database: DatabaseConfig{
+			Type:     getEnv("DB_TYPE", "sqlite"),
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnv("DB_PORT", "5432"),
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "password"),
 			Name:     getEnv("DB_NAME", "goapp"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+			Path:     getEnv("DB_PATH", "data/app.db"),
 		},
 		JWT: JWTConfig{
 			SecretKey: getEnv("JWT_SECRET", "your-secret-key"),

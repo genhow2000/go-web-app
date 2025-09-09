@@ -5,15 +5,15 @@ steps:
       [
         "build",
         "-f",
-        "Dockerfile.simple",
+        "Dockerfile",
         "-t",
-        "gcr.io/fleet-day-383710/go-simple-app:latest",
+        "gcr.io/fleet-day-383710/go-app:latest",
         ".",
       ]
 
   # 推送映像到 Container Registry
   - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/fleet-day-383710/go-simple-app:latest"]
+    args: ["push", "gcr.io/fleet-day-383710/go-app:latest"]
 
   # 部署到 Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -21,9 +21,9 @@ steps:
     args:
       - "run"
       - "deploy"
-      - "go-simple-app"
+      - "go-app"
       - "--image"
-      - "gcr.io/fleet-day-383710/go-simple-app:latest"
+      - "gcr.io/fleet-day-383710/go-app:latest"
       - "--platform"
       - "managed"
       - "--region"

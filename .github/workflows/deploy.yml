@@ -30,4 +30,4 @@ jobs:
       - name: Show service URL
         run: |
           echo "Service deployed successfully!"
-          echo "URL: https://go-simple-app-313144253156.asia-east1.run.app"
+          echo "URL: https://go-app-313144253156.asia-east1.run.app"

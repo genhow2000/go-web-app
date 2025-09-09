@@ -31,11 +31,10 @@ func main() {
 		"db_name":     cfg.Database.Name,
 	})
 
-	// 初始化資料庫
-	if err := database.Init(&cfg.Database); err != nil {
-		logger.Fatal("資料庫初始化失敗", err, logrus.Fields{
-			"db_host": cfg.Database.Host,
-			"db_name": cfg.Database.Name,
+	// 初始化SQLite資料庫
+	if err := database.InitSQLite(); err != nil {
+		logger.Fatal("SQLite資料庫初始化失敗", err, logrus.Fields{
+			"db_type": "sqlite",
 		})
 	}
 	defer database.Close()

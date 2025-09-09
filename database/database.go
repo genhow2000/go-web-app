@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 var DB *sql.DB
@@ -77,8 +78,8 @@ func InitSQLite() error {
 		dbPath = filepath.Join(dbDir, "app.db")
 	}
 	
-	// 連接 SQLite 資料庫
-	DB, err = sql.Open("sqlite3", dbPath)
+	// 連接 SQLite 資料庫 (使用純Go驅動)
+	DB, err = sql.Open("sqlite", dbPath)
 	if err != nil {
 		return fmt.Errorf("無法連接資料庫: %w", err)
 	}
