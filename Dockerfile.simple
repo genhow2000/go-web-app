@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # 整理依賴並構建簡化版應用
-RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main-simple main-simple.go
+RUN go mod tidy && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main-simple main-simple.go
 
 # 使用輕量級的 alpine 映像作為運行階段
 FROM alpine:latest
