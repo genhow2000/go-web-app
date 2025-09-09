@@ -25,7 +25,7 @@ func main() {
 		c.JSON(200, gin.H{
 			"message": "歡迎來到 Go 簡化版服務器！",
 			"status":  "running",
-			"version": "1.0.0",
+			"version": "1.0.2",
 			"features": []string{
 				"無資料庫版本",
 				"CI/CD 測試",
