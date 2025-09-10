@@ -67,11 +67,11 @@ func createTables() error {
 func InitSQLite() error {
 	var err error
 	
-	// 從環境變數獲取資料庫路徑，默認為 data/app.db
+	// 從環境變數獲取資料庫路徑
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		// 創建資料庫目錄
-		dbDir := "data"
+		// 統一使用 /tmp 目錄，本地和雲端都一樣
+		dbDir := "/tmp"
 		if err := os.MkdirAll(dbDir, 0755); err != nil {
 			return fmt.Errorf("無法創建資料庫目錄: %w", err)
 		}
