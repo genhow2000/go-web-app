@@ -6,7 +6,7 @@
 
 - **現代化儀表板** - 類似專業界面設計
 - **用戶認證系統** - JWT token 認證
-- **PostgreSQL 數據庫** - 完整的數據持久化
+- **SQLite 數據庫** - 輕量級數據持久化
 - **日誌系統** - 使用 logrus 的專業日誌記錄
 - **Docker 容器化** - 一鍵部署
 - **響應式設計** - 支持桌面和移動設備
@@ -15,7 +15,7 @@
 ## 📋 技術棧
 
 - **後端**: Go 1.21 + Gin 框架
-- **數據庫**: PostgreSQL
+- **數據庫**: SQLite
 - **前端**: HTML5 + CSS3 + JavaScript + Font Awesome
 - **容器化**: Docker + Docker Compose
 - **日誌**: Logrus
@@ -47,15 +47,11 @@ docker-compose up -d
 ### 本地開發
 
 1. 安裝 Go 1.21+
-2. 安裝 PostgreSQL
+2. 確保有 Go 環境
 3. 設置環境變量
 
 ```bash
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_USER=postgres
-export DB_PASSWORD=password
-export DB_NAME=goapp
+export DB_PATH=data/app.db
 export JWT_SECRET=your-secret-key
 ```
 
@@ -88,16 +84,12 @@ go-web-app/
 
 ### 環境變量
 
-| 變量名      | 默認值          | 說明         |
-| ----------- | --------------- | ------------ |
-| PORT        | 8080            | 服務端口     |
-| HOST        | 0.0.0.0         | 服務地址     |
-| DB_HOST     | localhost       | 數據庫地址   |
-| DB_PORT     | 5432            | 數據庫端口   |
-| DB_USER     | postgres        | 數據庫用戶名 |
-| DB_PASSWORD | password        | 數據庫密碼   |
-| DB_NAME     | goapp           | 數據庫名稱   |
-| JWT_SECRET  | your-secret-key | JWT 密鑰     |
+| 變量名     | 默認值          | 說明                  |
+| ---------- | --------------- | --------------------- |
+| PORT       | 8080            | 服務端口              |
+| HOST       | 0.0.0.0         | 服務地址              |
+| DB_PATH    | data/app.db     | SQLite 數據庫文件路徑 |
+| JWT_SECRET | your-secret-key | JWT 密鑰              |
 
 ## 📊 API 接口
 
@@ -212,7 +204,7 @@ docker-compose logs -f
 - [Gin Web Framework](https://gin-gonic.com/)
 - [Logrus](https://github.com/sirupsen/logrus)
 - [Font Awesome](https://fontawesome.com/)
-- [PostgreSQL](https://www.postgresql.org/)
+- [SQLite](https://www.sqlite.org/)
 
 ---
 

@@ -152,12 +152,7 @@ PORT=8080
 HOST=0.0.0.0
 
 # 數據庫配置
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=password
-DB_NAME=goapp
-DB_SSLMODE=disable
+DB_PATH=data/app.db
 
 # JWT 配置
 JWT_SECRET=your-secret-key
@@ -204,10 +199,10 @@ JWT_EXPIRES_IN=24
 
 ## 技術棧
 
-- **後端**: Go, Gin, PostgreSQL
+- **後端**: Go, Gin, SQLite
 - **前端**: HTML, CSS, JavaScript, Bootstrap
 - **認證**: JWT, bcrypt
-- **數據庫**: PostgreSQL
+- **數據庫**: SQLite
 - **日誌**: Logrus
 
 ## 版本歷史

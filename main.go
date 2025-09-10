@@ -27,12 +27,11 @@ func main() {
 	logger.Info("配置載入完成", logrus.Fields{
 		"server_host": cfg.Server.Host,
 		"server_port": cfg.Server.Port,
-		"db_host":     cfg.Database.Host,
-		"db_name":     cfg.Database.Name,
+		"db_path":     cfg.Database.Path,
 	})
 
 	// 初始化SQLite資料庫
-	if err := database.InitSQLite(); err != nil {
+	if err := database.Init(); err != nil {
 		logger.Fatal("SQLite資料庫初始化失敗", err, logrus.Fields{
 			"db_type": "sqlite",
 		})

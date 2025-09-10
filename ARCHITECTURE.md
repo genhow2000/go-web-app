@@ -40,14 +40,14 @@ go/
 ### 核心框架
 
 - **Gin**: 高性能 HTTP Web 框架
-- **PostgreSQL**: 關係型資料庫
+- **SQLite**: 輕量級關係型資料庫
 - **JWT**: JSON Web Token 認證
 - **bcrypt**: 密碼雜湊
 
 ### 依賴管理
 
 - `github.com/gin-gonic/gin` - Web 框架
-- `github.com/lib/pq` - PostgreSQL 驅動
+- `github.com/mattn/go-sqlite3` - SQLite 驅動
 - `github.com/golang-jwt/jwt/v5` - JWT 處理
 - `golang.org/x/crypto` - 密碼雜湊
 - `github.com/joho/godotenv` - 環境變數管理
@@ -133,7 +133,7 @@ go/
 ### 服務配置
 
 - Go 應用: 端口 8080
-- PostgreSQL: 端口 5432
+- SQLite: 本地文件數據庫
 - 資料持久化: Docker volumes
 
 ## 📊 與 Laravel 的對比

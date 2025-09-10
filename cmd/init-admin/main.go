@@ -20,7 +20,7 @@ func main() {
 	cfg := config.Load()
 
 	// 初始化資料庫
-	if err := database.Init(&cfg.Database); err != nil {
+	if err := database.Init(); err != nil {
 		log.Fatal("資料庫初始化失敗:", err)
 	}
 	defer database.Close()
