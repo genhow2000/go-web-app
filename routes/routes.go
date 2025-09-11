@@ -371,6 +371,22 @@ func SetupRoutes(
 		protected.DELETE("/users/:id", userController.DeleteUser)
 	}
 
+	// 聊天功能路由（商戶和管理者都可以使用）
+	chatController := controllers.NewChatController()
+	chat := r.Group("/api/chat")
+	chat.Use(middleware.AuthMiddleware(authService))
+	chat.Use(middleware.CustomerMiddleware()) // 允许customer和admin角色
+	{
+		// 对话管理
+		chat.POST("/conversations", chatController.CreateConversation)
+		chat.GET("/conversations", chatController.GetUserConversations)
+		chat.GET("/conversations/:id", chatController.GetConversation)
+		chat.DELETE("/conversations/:id", chatController.DeleteConversation)
+		
+		// 消息管理
+		chat.POST("/send", chatController.SendMessage)
+	}
+
 	// 管理員專用路由
 	admin := r.Group("/admin")
 	admin.Use(middleware.AuthMiddleware(authService))
@@ -394,6 +410,10 @@ func SetupRoutes(
 			adminAPI.PUT("/users/:id/role", adminController.UpdateUserRole)
 			adminAPI.DELETE("/users/:id", adminController.DeleteUser)
 			adminAPI.GET("/stats", adminController.GetUserStats)
+			
+			// 聊天管理
+			adminAPI.GET("/chat/status", chatController.GetDatabaseStatus)
+			adminAPI.POST("/chat/cleanup", chatController.CleanupOldData)
 		}
 	}
 

@@ -38,6 +38,20 @@ func main() {
 	}
 	defer database.Close()
 
+	// 初始化MongoDB資料庫
+	if err := database.InitMongoDB(); err != nil {
+		logger.Warn("MongoDB資料庫初始化失敗", logrus.Fields{
+			"db_type": "mongodb",
+			"error":   err.Error(),
+			"note":    "聊天功能將不可用",
+		})
+	} else {
+		logger.Info("MongoDB資料庫初始化成功", logrus.Fields{
+			"db_type": "mongodb",
+		})
+	}
+	defer database.CloseMongoDB()
+
 	// 初始化 Repository
 	userRepo := models.NewUserRepository(database.DB)
 	logger.Info("Repository初始化完成")

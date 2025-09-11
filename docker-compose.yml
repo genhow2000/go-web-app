@@ -9,6 +9,8 @@ services:
     environment:
       - PORT=8080
       - DB_PATH=/app/data/app.db
+      - MONGODB_URI=mongodb+srv://genhow2000_db_user:PKwCLU4qXzrpAjSY@cluster0.atzcxpw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_DATABASE=chatbot
     volumes:
       - app_data:/app/data
       - ./logs:/app/logs  # 映射日誌目錄到本地

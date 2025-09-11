@@ -73,7 +73,7 @@ func (c *AuthController) MerchantLogin(ctx *gin.Context) {
 	}
 
 	// 檢查是否為商戶角色
-	if response.User.Role != "merchant" && response.User.Role != "user" {
+	if response.User.Role != "merchant" && response.User.Role != "user" && response.User.Role != "customer" {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"error": "此帳號無權限登入商戶後台",
 		})
@@ -86,6 +86,7 @@ func (c *AuthController) MerchantLogin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "商戶登入成功",
 		"user":    response.User,
+		"token":   response.Token,
 	})
 }
 
@@ -121,6 +122,7 @@ func (c *AuthController) AdminLogin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "管理員登入成功",
 		"user":    response.User,
+		"token":   response.Token,
 	})
 }
 

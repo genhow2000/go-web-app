@@ -17,7 +17,10 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Path string // SQLite database file path
+	Type     string // "sqlite" or "mongodb"
+	Path     string // SQLite database file path
+	MongoURI string // MongoDB connection URI
+	MongoDB  string // MongoDB database name
 }
 
 type JWTConfig struct {
@@ -32,7 +35,10 @@ func Load() *Config {
 			Host: getEnv("HOST", "0.0.0.0"),
 		},
 		Database: DatabaseConfig{
-			Path: getEnv("DB_PATH", "data/app.db"),
+			Type:     getEnv("DATABASE_TYPE", "sqlite"),
+			Path:     getEnv("DB_PATH", "data/app.db"),
+			MongoURI: getEnv("MONGODB_URI", ""),
+			MongoDB:  getEnv("MONGODB_DATABASE", "chatbot"),
 		},
 		JWT: JWTConfig{
 			SecretKey: getEnv("JWT_SECRET", "your-secret-key"),

@@ -164,7 +164,7 @@ func CustomerMiddleware() gin.HandlerFunc {
 
 		// 檢查用戶角色
 		if userObj, ok := user.(*models.User); ok {
-			if userObj.Role != "customer" && userObj.Role != "admin" {
+			if userObj.Role != "customer" && userObj.Role != "admin" && userObj.Role != "merchant" {
 				if c.Request.Header.Get("Accept") == "text/html" {
 					c.HTML(http.StatusForbidden, "error.html", gin.H{
 						"error": "權限不足",

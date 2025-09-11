@@ -40,4 +40,4 @@ steps:
       - "--min-instances"
       - "0"
       - "--set-env-vars"
-      - "DB_PATH=/tmp/app.db"
+      - "DB_PATH=/tmp/app.db,MONGODB_URI=${_MONGODB_URI},MONGODB_DATABASE=chatbot"
