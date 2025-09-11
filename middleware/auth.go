@@ -35,7 +35,7 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		if tokenString == "" {
 			// 如果是頁面請求，重定向到登入頁面
 			if c.Request.Header.Get("Accept") == "text/html" {
-				c.Redirect(http.StatusFound, "/login")
+				c.Redirect(http.StatusFound, "/merchant/login")
 				c.Abort()
 				return
 			}
@@ -52,7 +52,7 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		if err != nil {
 			// 如果是頁面請求，重定向到登入頁面
 			if c.Request.Header.Get("Accept") == "text/html" {
-				c.Redirect(http.StatusFound, "/login")
+				c.Redirect(http.StatusFound, "/merchant/login")
 				c.Abort()
 				return
 			}
@@ -105,7 +105,7 @@ func AdminMiddleware() gin.HandlerFunc {
 		user, exists := c.Get("user")
 		if !exists {
 			if c.Request.Header.Get("Accept") == "text/html" {
-				c.Redirect(http.StatusFound, "/login")
+				c.Redirect(http.StatusFound, "/merchant/login")
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error": "未認證的用戶",
@@ -132,7 +132,7 @@ func AdminMiddleware() gin.HandlerFunc {
 			}
 		} else {
 			if c.Request.Header.Get("Accept") == "text/html" {
-				c.Redirect(http.StatusFound, "/login")
+				c.Redirect(http.StatusFound, "/merchant/login")
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error": "無效的用戶信息",
@@ -152,7 +152,7 @@ func CustomerMiddleware() gin.HandlerFunc {
 		user, exists := c.Get("user")
 		if !exists {
 			if c.Request.Header.Get("Accept") == "text/html" {
-				c.Redirect(http.StatusFound, "/login")
+				c.Redirect(http.StatusFound, "/merchant/login")
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error": "未認證的用戶",
@@ -179,7 +179,7 @@ func CustomerMiddleware() gin.HandlerFunc {
 			}
 		} else {
 			if c.Request.Header.Get("Accept") == "text/html" {
-				c.Redirect(http.StatusFound, "/login")
+				c.Redirect(http.StatusFound, "/merchant/login")
 			} else {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error": "無效的用戶信息",

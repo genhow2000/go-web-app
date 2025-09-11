@@ -347,20 +347,16 @@ func SetupRoutes(
 		adminAuth.POST("/login", authController.AdminLogin)
 	}
 
-	// 認證路由（保持兼容性）
+	// 註冊路由（保持兼容性）
 	auth := r.Group("/auth")
 	{
-		auth.GET("/login", authController.ShowLoginPage)
 		auth.GET("/register", authController.ShowRegisterPage)
-		auth.POST("/login", authController.Login)
 		auth.POST("/register", authController.Register)
 		auth.POST("/logout", authController.Logout)
 	}
 
 	// 兼容舊路由
-	r.GET("/login", authController.ShowLoginPage)
 	r.GET("/register", authController.ShowRegisterPage)
-	r.POST("/login", authController.Login)
 	r.POST("/register", authController.Register)
 	r.POST("/logout", authController.Logout)
 
@@ -368,7 +364,6 @@ func SetupRoutes(
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(authService))
 	{
-		protected.GET("/dashboard", authController.ShowDashboard)
 		protected.GET("/users", userController.GetAllUsers)
 		protected.GET("/users/:id", userController.GetUserByID)
 		protected.POST("/users", userController.CreateUser)
@@ -425,8 +420,6 @@ func SetupRoutes(
 		}
 	}
 
-	// 兼容舊路由（需要認證）
-	// r.GET("/dashboard", middleware.AuthMiddleware(authService), authController.ShowDashboard)
 
 	return r
 }

@@ -199,7 +199,7 @@
         </div>
         
         <div class="login-link">
-            <p>已有帳戶？ <a href="/login">立即登入</a></p>
+            <p>已有帳戶？ <a href="/merchant/login">商戶登入</a> 或 <a href="/admin/login">管理員登入</a></p>
         </div>
     </div>
 
@@ -255,7 +255,7 @@
                     
                     // 重定向到登入頁面
                     setTimeout(() => {
-                        window.location.href = '/login';
+                        window.location.href = '/merchant/login';
                     }, 1500);
                 } else {
                     errorMessage.textContent = data.error || '註冊失敗，請稍後再試';
