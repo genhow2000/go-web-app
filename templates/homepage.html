@@ -62,6 +62,10 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.15);
         }
 
+        .status-card {
+            cursor: pointer;
+        }
+
         .status-card h3 {
             color: #4a5568;
             margin-bottom: 15px;
@@ -237,6 +241,124 @@
             opacity: 0.8;
         }
 
+        /* 模態框樣式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f7fafc;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .detail-value {
+            color: #2d3748;
+            font-family: 'Courier New', monospace;
+            background: #f7fafc;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-online { background: #c6f6d5; color: #22543d; }
+        .status-offline { background: #fed7d7; color: #742a2a; }
+        .status-warning { background: #fef5e7; color: #744210; }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -245,6 +367,19 @@
             .cta-buttons {
                 flex-direction: column;
                 align-items: center;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .modal-header {
+                padding: 15px 20px;
+            }
+
+            .modal-body {
+                padding: 20px;
             }
         }
     </style>
@@ -257,68 +392,28 @@
         </div>
 
         <div class="status-grid">
-            <div class="status-card">
+            <div class="status-card" onclick="showStatusDetails('system')">
                 <h3><span class="status-icon status-online"></span>系統狀態</h3>
                 <div class="status-value" id="systemStatus">運行中</div>
                 <div class="status-detail">服務器運行時間: <span id="uptime">{{.uptime}}</span></div>
             </div>
 
-            <div class="status-card">
+            <div class="status-card" onclick="showStatusDetails('database')">
                 <h3><span class="status-icon status-database"></span>資料庫</h3>
                 <div class="status-value" id="dbStatus">已連接</div>
                 <div class="status-detail">SQLite 資料庫 | 遷移版本: {{.migration_version}}</div>
             </div>
 
-            <div class="status-card">
+            <div class="status-card" onclick="showStatusDetails('api')">
                 <h3><span class="status-icon status-api"></span>API 服務</h3>
                 <div class="status-value" id="apiStatus">正常</div>
                 <div class="status-detail">RESTful API | 版本: {{.version}}</div>
             </div>
 
-            <div class="status-card">
+            <div class="status-card" onclick="showStatusDetails('cloud')">
                 <h3><span class="status-icon status-cloud"></span>雲端部署</h3>
                 <div class="status-value" id="cloudStatus">已部署</div>
                 <div class="status-detail">Google Cloud Run | 區域: asia-east1</div>
-            </div>
-        </div>
-
-        <div class="tech-stack">
-            <h2>🛠️ 技術棧</h2>
-            <div class="tech-categories">
-                <div class="tech-category">
-                    <h3>後端技術</h3>
-                    <div class="tech-item">Go 1.21</div>
-                    <div class="tech-item">Gin Web Framework</div>
-                    <div class="tech-item">JWT 認證</div>
-                    <div class="tech-item">bcrypt 密碼加密</div>
-                    <div class="tech-item">SQLite 資料庫</div>
-                    <div class="tech-item">Redis 快取</div>
-                    <div class="tech-item">MongoDB 文檔資料庫</div>
-                </div>
-                <div class="tech-category">
-                    <h3>前端技術</h3>
-                    <div class="tech-item">HTML5 + CSS3</div>
-                    <div class="tech-item">JavaScript ES6+</div>
-                    <div class="tech-item">響應式設計</div>
-                    <div class="tech-item">現代化 UI</div>
-                </div>
-                <div class="tech-category">
-                    <h3>部署與運維</h3>
-                    <div class="tech-item">Docker 容器化</div>
-                    <div class="tech-item">Google Cloud Run</div>
-                    <div class="tech-item">CI/CD 自動部署</div>
-                    <div class="tech-item">自製 Migration 系統</div>
-                    <div class="tech-item">自製 Seeder 系統</div>
-                    <div class="tech-item">日誌監控系統</div>
-                </div>
-                <div class="tech-category">
-                    <h3>資料庫管理</h3>
-                    <div class="tech-item">SQLite 資料庫</div>
-                    <div class="tech-item">版本控制遷移</div>
-                    <div class="tech-item">自動測試數據</div>
-                    <div class="tech-item">重複執行保護</div>
-                    <div class="tech-item">執行記錄追蹤</div>
-                </div>
             </div>
         </div>
 
@@ -378,6 +473,46 @@
             </div>
         </div>
 
+        <div class="tech-stack">
+            <h2>🛠️ 技術棧</h2>
+            <div class="tech-categories">
+                <div class="tech-category">
+                    <h3>後端技術</h3>
+                    <div class="tech-item">Go 1.21</div>
+                    <div class="tech-item">Gin Web Framework</div>
+                    <div class="tech-item">JWT 認證</div>
+                    <div class="tech-item">bcrypt 密碼加密</div>
+                    <div class="tech-item">SQLite 資料庫</div>
+                    <div class="tech-item">Redis 快取</div>
+                    <div class="tech-item">MongoDB 文檔資料庫</div>
+                </div>
+                <div class="tech-category">
+                    <h3>前端技術</h3>
+                    <div class="tech-item">HTML5 + CSS3</div>
+                    <div class="tech-item">JavaScript ES6+</div>
+                    <div class="tech-item">響應式設計</div>
+                    <div class="tech-item">現代化 UI</div>
+                </div>
+                <div class="tech-category">
+                    <h3>部署與運維</h3>
+                    <div class="tech-item">Docker 容器化</div>
+                    <div class="tech-item">Google Cloud Run</div>
+                    <div class="tech-item">CI/CD 自動部署</div>
+                    <div class="tech-item">自製 Migration 系統</div>
+                    <div class="tech-item">自製 Seeder 系統</div>
+                    <div class="tech-item">日誌監控系統</div>
+                </div>
+                <div class="tech-category">
+                    <h3>資料庫管理</h3>
+                    <div class="tech-item">SQLite 資料庫</div>
+                    <div class="tech-item">版本控制遷移</div>
+                    <div class="tech-item">自動測試數據</div>
+                    <div class="tech-item">重複執行保護</div>
+                    <div class="tech-item">執行記錄追蹤</div>
+                </div>
+            </div>
+        </div>
+
         <div class="cta-section">
             <h2>🎯 技術能力展示</h2>
             <p>這個系統展示了完整的全端開發能力，包括後端 API 設計、前端界面開發、資料庫設計、雲端部署等技術。</p>
@@ -395,7 +530,96 @@
         </div>
     </div>
 
+    <!-- 模態框 -->
+    <div id="statusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">系統詳情</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="loading">載入中...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // 顯示狀態詳情
+        function showStatusDetails(type) {
+            const modal = document.getElementById('statusModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            // 設置標題
+            const titles = {
+                'system': '系統狀態詳情',
+                'database': '資料庫詳情',
+                'api': 'API 服務詳情',
+                'cloud': '雲端部署詳情'
+            };
+            modalTitle.textContent = titles[type] || '系統詳情';
+            
+            // 顯示模態框
+            modal.style.display = 'block';
+            modalBody.innerHTML = '<div class="loading">載入中...</div>';
+            
+            // 載入對應的詳細信息
+            loadStatusDetails(type);
+        }
+
+        // 載入狀態詳情
+        async function loadStatusDetails(type) {
+            try {
+                const response = await fetch(`/api/status/${type}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayStatusDetails(data);
+                } else {
+                    throw new Error('載入失敗');
+                }
+            } catch (error) {
+                document.getElementById('modalBody').innerHTML = 
+                    '<div class="loading">載入失敗，請稍後再試。</div>';
+            }
+        }
+
+        // 顯示狀態詳情內容
+        function displayStatusDetails(data) {
+            const modalBody = document.getElementById('modalBody');
+            let html = '';
+            
+            for (const section of data.sections) {
+                html += `<div class="detail-section">`;
+                html += `<h3>${section.title}</h3>`;
+                for (const item of section.items) {
+                    html += `<div class="detail-item">`;
+                    html += `<span class="detail-label">${item.label}</span>`;
+                    if (item.status) {
+                        html += `<span class="status-badge status-${item.status}">${item.value}</span>`;
+                    } else {
+                        html += `<span class="detail-value">${item.value}</span>`;
+                    }
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            }
+            
+            modalBody.innerHTML = html;
+        }
+
+        // 關閉模態框
+        function closeModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        // 點擊模態框外部關閉
+        window.onclick = function(event) {
+            const modal = document.getElementById('statusModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
         // 實時更新系統狀態
         function updateSystemStatus() {
             fetch('/health')

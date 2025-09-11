@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
 	"go-simple-app/controllers"
+	"go-simple-app/database"
 	"go-simple-app/logger"
 	"go-simple-app/middleware"
 	"go-simple-app/services"
@@ -137,6 +139,189 @@ func SetupRoutes(
 		
 		c.Header("Content-Type", "text/plain; charset=utf-8")
 		c.String(http.StatusOK, string(content))
+	})
+
+	// API 端點：獲取狀態詳情
+	r.GET("/api/status/:type", func(c *gin.Context) {
+		statusType := c.Param("type")
+		
+		// 創建監控服務實例
+		monitorService := services.NewMonitorService(database.DB)
+		
+		var response gin.H
+		
+		switch statusType {
+		case "system":
+			systemInfo := monitorService.GetSystemInfo()
+			response = gin.H{
+				"sections": []gin.H{
+					{
+						"title": "系統信息",
+						"items": []gin.H{
+							{"label": "服務器狀態", "value": systemInfo["status"], "status": "online"},
+							{"label": "運行時間", "value": systemInfo["uptime"]},
+							{"label": "CPU 使用率", "value": systemInfo["cpu_usage"]},
+							{"label": "記憶體使用", "value": systemInfo["memory_usage"]},
+							{"label": "磁盤空間", "value": systemInfo["disk_usage"]},
+						},
+					},
+					{
+						"title": "Go 運行時信息",
+						"items": []gin.H{
+							{"label": "Goroutine 數量", "value": fmt.Sprintf("%d 個", systemInfo["go_routines"])},
+							{"label": "GC 次數", "value": fmt.Sprintf("%d 次", systemInfo["gc_count"])},
+							{"label": "Go 版本", "value": runtime.Version()},
+						},
+					},
+				},
+			}
+		case "database":
+			dbInfo := monitorService.GetDatabaseInfo()
+			tableStats := dbInfo["tables"].(map[string]interface{})
+			
+			// 構建資料表統計項目
+			var tableItems []gin.H
+			for label, value := range tableStats {
+				tableItems = append(tableItems, gin.H{
+					"label": label,
+					"value": value,
+				})
+			}
+			
+			response = gin.H{
+				"sections": []gin.H{
+					{
+						"title": "資料庫信息",
+						"items": []gin.H{
+							{"label": "資料庫類型", "value": dbInfo["type"]},
+							{"label": "連接狀態", "value": dbInfo["status"], "status": "online"},
+							{"label": "資料庫大小", "value": dbInfo["size"]},
+							{"label": "遷移版本", "value": dbInfo["migration"].(map[string]interface{})["version"]},
+							{"label": "最後更新", "value": dbInfo["last_update"]},
+						},
+					},
+					{
+						"title": "資料表統計",
+						"items": tableItems,
+					},
+				},
+			}
+		case "api":
+			apiInfo := monitorService.GetAPIInfo()
+			endpoints := apiInfo["endpoints"].([]string)
+			
+			// 構建 API 端點項目
+			var endpointItems []gin.H
+			for _, endpoint := range endpoints {
+				endpointItems = append(endpointItems, gin.H{
+					"label": endpoint,
+					"value": "可用",
+					"status": "online",
+				})
+			}
+			
+			response = gin.H{
+				"sections": []gin.H{
+					{
+						"title": "API 服務信息",
+						"items": []gin.H{
+							{"label": "API 版本", "value": apiInfo["version"]},
+							{"label": "服務狀態", "value": apiInfo["status"], "status": "online"},
+							{"label": "響應時間", "value": apiInfo["response_time"]},
+							{"label": "請求處理量", "value": apiInfo["request_count"]},
+							{"label": "錯誤率", "value": apiInfo["error_rate"]},
+						},
+					},
+					{
+						"title": "API 端點",
+						"items": endpointItems,
+					},
+				},
+			}
+		case "cloud":
+			cloudInfo := monitorService.GetCloudInfo()
+			envVars := cloudInfo["env_vars"].([]string)
+			cicdInfo := cloudInfo["cicd"].(map[string]interface{})
+			gitInfo := cloudInfo["git"].(map[string]interface{})
+			buildSteps := cicdInfo["build_steps"].([]string)
+			
+			// 構建環境變數項目
+			var envItems []gin.H
+			for _, envVar := range envVars {
+				envItems = append(envItems, gin.H{
+					"label": envVar,
+					"value": os.Getenv(envVar),
+				})
+			}
+			
+			// 構建 CI/CD 構建步驟項目
+			var buildStepItems []gin.H
+			for i, step := range buildSteps {
+				buildStepItems = append(buildStepItems, gin.H{
+					"label": fmt.Sprintf("步驟 %d", i+1),
+					"value": step,
+					"status": "online",
+				})
+			}
+			
+			response = gin.H{
+				"sections": []gin.H{
+					{
+						"title": "雲端部署信息",
+						"items": []gin.H{
+							{"label": "平台", "value": cloudInfo["platform"]},
+							{"label": "區域", "value": cloudInfo["region"]},
+							{"label": "部署狀態", "value": cloudInfo["status"], "status": "online"},
+							{"label": "實例數", "value": cloudInfo["instances"]},
+							{"label": "CPU 分配", "value": cloudInfo["cpu_allocated"]},
+							{"label": "記憶體分配", "value": cloudInfo["memory_allocated"]},
+						},
+					},
+					{
+						"title": "CI/CD 流水線",
+						"items": []gin.H{
+							{"label": "CI/CD 平台", "value": cicdInfo["platform"]},
+							{"label": "觸發方式", "value": cicdInfo["trigger_type"]},
+							{"label": "構建時間", "value": cicdInfo["build_time"]},
+							{"label": "部署時間", "value": cicdInfo["deploy_time"]},
+							{"label": "最後構建", "value": cicdInfo["last_build"], "status": "online"},
+						},
+					},
+					{
+						"title": "Git 版本控制",
+						"items": []gin.H{
+							{"label": "代碼倉庫", "value": gitInfo["repository"]},
+							{"label": "分支", "value": gitInfo["branch"]},
+							{"label": "提交哈希", "value": gitInfo["commit_hash"]},
+							{"label": "最後提交", "value": gitInfo["last_commit"]},
+							{"label": "自動部署", "value": gitInfo["auto_deploy"], "status": "online"},
+						},
+					},
+					{
+						"title": "構建步驟",
+						"items": buildStepItems,
+					},
+					{
+						"title": "部署配置",
+						"items": []gin.H{
+							{"label": "容器映像", "value": cloudInfo["container_image"]},
+							{"label": "端口", "value": cloudInfo["port"]},
+							{"label": "健康檢查", "value": cloudInfo["health_check"]},
+							{"label": "自動擴展", "value": cloudInfo["auto_scale"]},
+						},
+					},
+					{
+						"title": "環境變數",
+						"items": envItems,
+					},
+				},
+			}
+		default:
+			c.JSON(http.StatusNotFound, gin.H{"error": "未知的狀態類型"})
+			return
+		}
+		
+		c.JSON(http.StatusOK, response)
 	})
 
 	// 商戶登入路由
