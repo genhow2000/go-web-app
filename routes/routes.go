@@ -108,6 +108,29 @@ func SetupRoutes(
 		}
 	}
 
+	// 資料庫管理登入/登出（不需要認證）
+	dbController := controllers.NewDBController()
+	r.GET("/admin/db/login", dbController.ShowDBLogin)
+	r.POST("/admin/db/login", dbController.DBLogin)
+	r.POST("/admin/db/logout", dbController.DBLogout)
+
+	// 資料庫管理路由（獨立認證）
+	db := r.Group("/admin/db")
+	db.Use(middleware.DBAuthMiddleware())
+	{
+		// 資料庫管理頁面
+		db.GET("/", dbController.ShowDBManager)
+
+		// 資料庫管理 API
+		dbAPI := db.Group("/api")
+		{
+			dbAPI.GET("/tables", dbController.GetTables)
+			dbAPI.GET("/tables/:table/data", dbController.GetTableData)
+			dbAPI.POST("/query", dbController.ExecuteQuery)
+			dbAPI.GET("/stats", dbController.GetDBStats)
+		}
+	}
+
 	// 兼容舊路由（需要認證）
 	// r.GET("/dashboard", middleware.AuthMiddleware(authService), authController.ShowDashboard)
 

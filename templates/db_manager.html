@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料庫管理 - {{.title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+        
+        .nav-tab.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .nav-tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .table-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .table-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .table-card:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        
+        .table-card h3 {
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        .table-card .count {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .query-section {
+            margin-bottom: 20px;
+        }
+        
+        .query-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border: 1px solid #ced4da;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .pagination button:hover:not(:disabled) {
+            background: #e9ecef;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination .current {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>資料庫管理介面</h1>
+            <p>管理 SQLite 資料庫表和資料</p>
+            <div style="text-align: right; margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="logout()">登出</button>
+            </div>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('tables')">資料表</button>
+            <button class="nav-tab" onclick="showTab('query')">SQL 查詢</button>
+            <button class="nav-tab" onclick="showTab('stats')">統計資訊</button>
+        </div>
+        
+        <!-- 資料表頁面 -->
+        <div id="tables" class="tab-content active">
+            <h2>資料表列表</h2>
+            <div id="tableList" class="table-list">
+                <div class="loading">載入中...</div>
+            </div>
+            
+            <div id="tableData" style="display: none;">
+                <h3 id="currentTable"></h3>
+                <div id="tableContent"></div>
+                <div id="pagination" class="pagination"></div>
+            </div>
+        </div>
+        
+        <!-- SQL 查詢頁面 -->
+        <div id="query" class="tab-content">
+            <h2>SQL 查詢</h2>
+            <div class="query-section">
+                <textarea id="queryInput" class="query-input" placeholder="輸入 SELECT 查詢語句...&#10;例如: SELECT * FROM users LIMIT 10"></textarea>
+                <br>
+                <button class="btn btn-primary" onclick="executeQuery()">執行查詢</button>
+                <button class="btn btn-secondary" onclick="clearQuery()">清除</button>
+            </div>
+            <div id="queryResult"></div>
+        </div>
+        
+        <!-- 統計資訊頁面 -->
+        <div id="stats" class="tab-content">
+            <h2>資料庫統計</h2>
+            <div id="statsContent">
+                <div class="loading">載入中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let currentTable = '';
+        const limit = 50;
+        
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTables();
+            loadStats();
+        });
+        
+        // 切換頁面
+        function showTab(tabName) {
+            // 隱藏所有頁面
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 移除所有按鈕的 active 類
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 顯示選中的頁面
+            document.getElementById(tabName).classList.add('active');
+            
+            // 添加 active 類到對應按鈕
+            event.target.classList.add('active');
+        }
+        
+        // 載入資料表列表
+        async function loadTables() {
+            try {
+                const response = await fetch('/admin/db/api/tables');
+                const data = await response.json();
+                
+                if (data.tables) {
+                    displayTables(data.tables);
+                }
+            } catch (error) {
+                document.getElementById('tableList').innerHTML = 
+                    '<div class="error">載入資料表失敗: ' + error.message + '</div>';
+            }
+        }
+        
+        // 顯示資料表列表
+        function displayTables(tables) {
+            const tableList = document.getElementById('tableList');
+            tableList.innerHTML = '';
+            
+            tables.forEach(table => {
+                const card = document.createElement('div');
+                card.className = 'table-card';
+                card.innerHTML = `
+                    <h3>${table}</h3>
+                    <div class="count">點擊查看資料</div>
+                `;
+                card.onclick = () => loadTableData(table);
+                tableList.appendChild(card);
+            });
+        }
+        
+        // 載入資料表資料
+        async function loadTableData(tableName) {
+            currentTable = tableName;
+            currentPage = 1;
+            
+            try {
+                const response = await fetch(`/admin/db/api/tables/${tableName}/data?page=${currentPage}&limit=${limit}`);
+                const data = await response.json();
+                
+                if (data && data.columns) {
+                    displayTableData(data);
+                } else {
+                    document.getElementById('tableData').innerHTML = 
+                        '<div class="error">載入資料失敗: ' + (data.error || '未知錯誤') + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('tableData').innerHTML = 
+                    '<div class="error">載入資料失敗: ' + error.message + '</div>';
+            }
+        }
+        
+        // 顯示資料表資料
+        function displayTableData(data) {
+            const tableData = document.getElementById('tableData');
+            const currentTableTitle = document.getElementById('currentTable');
+            const tableContent = document.getElementById('tableContent');
+            const pagination = document.getElementById('pagination');
+            
+            currentTableTitle.textContent = `資料表: ${currentTable} (共 ${data.total} 筆記錄)`;
+            
+            if (!data.data || data.data.length === 0) {
+                tableContent.innerHTML = '<p>沒有資料</p>';
+                pagination.innerHTML = '';
+                tableData.style.display = 'block';
+                return;
+            }
+            
+            // 建立表格
+            let tableHTML = '<table class="data-table"><thead><tr>';
+            data.columns.forEach(col => {
+                tableHTML += `<th>${col}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+            
+            data.data.forEach(row => {
+                tableHTML += '<tr>';
+                data.columns.forEach(col => {
+                    const value = row[col] === null ? '<em>NULL</em>' : row[col];
+                    tableHTML += `<td>${value}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</tbody></table>';
+            tableContent.innerHTML = tableHTML;
+            
+            // 建立分頁
+            const totalPages = Math.ceil(data.total / limit);
+            let paginationHTML = '';
+            
+            if (totalPages > 1) {
+                paginationHTML += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">上一頁</button>`;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === currentPage) {
+                        paginationHTML += `<button class="current">${i}</button>`;
+                    } else {
+                        paginationHTML += `<button onclick="changePage(${i})">${i}</button>`;
+                    }
+                }
+                
+                paginationHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">下一頁</button>`;
+            }
+            
+            pagination.innerHTML = paginationHTML;
+            tableData.style.display = 'block';
+        }
+        
+        // 換頁
+        async function changePage(page) {
+            if (page < 1) return;
+            currentPage = page;
+            await loadTableData(currentTable);
+        }
+        
+        // 執行 SQL 查詢
+        async function executeQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            if (!query) {
+                alert('請輸入查詢語句');
+                return;
+            }
+            
+            const queryResult = document.getElementById('queryResult');
+            queryResult.innerHTML = '<div class="loading">執行中...</div>';
+            
+            try {
+                const response = await fetch('/admin/db/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+                
+                const data = await response.json();
+                
+                if (data.data) {
+                    displayQueryResult(data);
+                } else {
+                    queryResult.innerHTML = '<div class="error">查詢失敗: ' + (data.error || '未知錯誤') + '</div>';
+                }
+            } catch (error) {
+                queryResult.innerHTML = '<div class="error">查詢失敗: ' + error.message + '</div>';
+            }
+        }
+        
+        // 顯示查詢結果
+        function displayQueryResult(data) {
+            const queryResult = document.getElementById('queryResult');
+            
+            if (data.data.length === 0) {
+                queryResult.innerHTML = '<div class="success">查詢完成，沒有結果</div>';
+                return;
+            }
+            
+            let tableHTML = `<div class="success">查詢完成，共 ${data.count} 筆結果</div>`;
+            tableHTML += '<table class="data-table"><thead><tr>';
+            data.columns.forEach(col => {
+                tableHTML += `<th>${col}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+            
+            data.data.forEach(row => {
+                tableHTML += '<tr>';
+                data.columns.forEach(col => {
+                    const value = row[col] === null ? '<em>NULL</em>' : row[col];
+                    tableHTML += `<td>${value}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</tbody></table>';
+            queryResult.innerHTML = tableHTML;
+        }
+        
+        // 清除查詢
+        function clearQuery() {
+            document.getElementById('queryInput').value = '';
+            document.getElementById('queryResult').innerHTML = '';
+        }
+        
+        // 載入統計資訊
+        async function loadStats() {
+            try {
+                const response = await fetch('/admin/db/api/stats');
+                const data = await response.json();
+                
+                if (data.stats) {
+                    displayStats(data.stats);
+                }
+            } catch (error) {
+                document.getElementById('statsContent').innerHTML = 
+                    '<div class="error">載入統計資訊失敗: ' + error.message + '</div>';
+            }
+        }
+        
+        // 顯示統計資訊
+        function displayStats(stats) {
+            const statsContent = document.getElementById('statsContent');
+            
+            let statsHTML = '<table class="data-table"><thead><tr><th>資料表</th><th>記錄數</th></tr></thead><tbody>';
+            
+            stats.forEach(stat => {
+                statsHTML += `<tr><td>${stat.table}</td><td>${stat.count}</td></tr>`;
+            });
+            
+            statsHTML += '</tbody></table>';
+            statsContent.innerHTML = statsHTML;
+        }
+        
+        // 登出功能
+        async function logout() {
+            try {
+                await fetch('/admin/db/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                // 重定向到登入頁面
+                window.location.href = '/admin/db/login';
+            } catch (error) {
+                console.error('登出失敗:', error);
+                // 即使登出失敗，也重定向到登入頁面
+                window.location.href = '/admin/db/login';
+            }
+        }
+    </script>
+</body>
+</html>
+
