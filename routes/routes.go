@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"go-simple-app/controllers"
 	"go-simple-app/logger"
 	"go-simple-app/middleware"
@@ -86,6 +88,55 @@ func SetupRoutes(
 			"uptime":            "24小時",
 			"migration_version": "001",
 		})
+	})
+
+	// 通用文檔頁面
+	r.GET("/docs/:type", func(c *gin.Context) {
+		docType := c.Param("type")
+		titleMap := map[string]string{
+			"seeder": "自製 Seeder 系統",
+			"migration": "自製 Migration 系統",
+			"user-management": "用戶管理系統",
+			"auth": "安全認證系統",
+			"admin": "管理後台系統",
+			"db-management": "資料庫管理系統",
+			"monitoring": "系統監控",
+			"api": "API 服務",
+			"redis": "Redis 快取系統",
+			"mongodb": "MongoDB 文檔資料庫",
+		}
+		
+		title, exists := titleMap[docType]
+		if !exists {
+			c.HTML(http.StatusNotFound, "error.html", gin.H{
+				"title": "文檔不存在",
+				"message": "請求的文檔類型不存在",
+			})
+			return
+		}
+		
+		c.HTML(http.StatusOK, "docs.html", gin.H{
+			"title": title,
+			"docType": docType,
+		})
+	})
+	
+	// API 端點：讀取 Markdown 文件
+	r.GET("/api/docs/:type", func(c *gin.Context) {
+		docType := c.Param("type")
+		filePath := fmt.Sprintf("md/%s.md", docType)
+		
+		// 讀取 Markdown 文件
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "文檔文件不存在",
+			})
+			return
+		}
+		
+		c.Header("Content-Type", "text/plain; charset=utf-8")
+		c.String(http.StatusOK, string(content))
 	})
 
 	// 商戶登入路由
