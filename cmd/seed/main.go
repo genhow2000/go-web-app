@@ -6,11 +6,21 @@ import (
 	"log"
 	"os"
 
+	"go-simple-app/database/seeders"
 	_ "github.com/mattn/go-sqlite3"
 	_ "modernc.org/sqlite"
 )
 
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("用法:")
+		fmt.Println("  ./seed run          - 執行所有 seeder")
+		fmt.Println("  ./seed clear        - 清除所有測試數據")
+		fmt.Println("  ./seed user         - 只執行用戶 seeder")
+		fmt.Println("  ./seed clear user   - 只清除用戶測試數據")
+		os.Exit(1)
+	}
+
 	// 從環境變數獲取資料庫路徑
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
@@ -31,21 +41,32 @@ func main() {
 
 	fmt.Println("資料庫連接成功!")
 
-	// 檢查是否已經有測試用戶
-	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM users WHERE email IN ('admin@example.com', 'merchant@example.com', 'user@example.com')").Scan(&count)
-	if err != nil {
-		log.Fatal("檢查用戶失敗:", err)
-	}
+	// 創建 seeder 管理器
+	seederManager := seeders.NewSeederManager(db)
 
-	if count > 0 {
-		fmt.Println("測試用戶已存在，無需執行 seeder")
-		return
+	// 根據命令執行相應操作
+	command := os.Args[1]
+	switch command {
+	case "run":
+		if err := seederManager.RunAll(); err != nil {
+			log.Fatal("執行 seeder 失敗:", err)
+		}
+		fmt.Println("所有 seeder 執行完成!")
+		
+	case "clear":
+		if err := seederManager.ClearAll(); err != nil {
+			log.Fatal("清除測試數據失敗:", err)
+		}
+		fmt.Println("所有測試數據已清除!")
+		
+	case "user":
+		if err := seederManager.RunSpecific("user"); err != nil {
+			log.Fatal("執行用戶 seeder 失敗:", err)
+		}
+		fmt.Println("用戶 seeder 執行完成!")
+		
+	default:
+		fmt.Printf("未知命令: %s\n", command)
+		os.Exit(1)
 	}
-
-	fmt.Println("開始創建測試用戶...")
-	
-	// 這裡可以添加創建測試用戶的邏輯
-	// 或者直接調用 seeder 包
-	fmt.Println("Seeder 執行完成!")
 }

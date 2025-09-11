@@ -32,7 +32,15 @@ migrate:
 
 # 執行資料庫 seeder
 seed:
-	go run cmd/seed/main.go
+	go run cmd/seed/main.go run
+
+# 清除測試數據
+seed-clear:
+	go run cmd/seed/main.go clear
+
+# 只執行用戶 seeder
+seed-user:
+	go run cmd/seed/main.go user
 
 # 執行測試
 test:
@@ -56,7 +64,13 @@ docker-migrate:
 	docker-compose exec go-app ./migrate
 
 docker-seed:
-	docker-compose exec go-app ./seed
+	docker-compose exec go-app ./seed run
+
+docker-seed-clear:
+	docker-compose exec go-app ./seed clear
+
+docker-seed-user:
+	docker-compose exec go-app ./seed user
 
 # 進入 Docker 容器
 docker-shell:
