@@ -359,6 +359,43 @@
         .status-offline { background: #fed7d7; color: #742a2a; }
         .status-warning { background: #fef5e7; color: #744210; }
 
+        .realtime-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .click-hint {
+            font-size: 0.8rem;
+            color: #667eea;
+            font-weight: 500;
+            margin-top: 8px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-card:hover .click-hint {
+            opacity: 1;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 2rem;
@@ -393,27 +430,31 @@
 
         <div class="status-grid">
             <div class="status-card" onclick="showStatusDetails('system')">
-                <h3><span class="status-icon status-online"></span>系統狀態</h3>
+                <h3><span class="status-icon status-online"></span>系統狀態 <span class="realtime-badge">即時數據</span></h3>
                 <div class="status-value" id="systemStatus">運行中</div>
                 <div class="status-detail">服務器運行時間: <span id="uptime">{{.uptime}}</span></div>
+                <div class="click-hint">點擊查看詳細數據</div>
             </div>
 
             <div class="status-card" onclick="showStatusDetails('database')">
-                <h3><span class="status-icon status-database"></span>資料庫</h3>
+                <h3><span class="status-icon status-database"></span>資料庫 <span class="realtime-badge">即時數據</span></h3>
                 <div class="status-value" id="dbStatus">已連接</div>
                 <div class="status-detail">SQLite 資料庫 | 遷移版本: {{.migration_version}}</div>
+                <div class="click-hint">點擊查看詳細數據</div>
             </div>
 
             <div class="status-card" onclick="showStatusDetails('api')">
-                <h3><span class="status-icon status-api"></span>API 服務</h3>
+                <h3><span class="status-icon status-api"></span>API 服務 <span class="realtime-badge">即時數據</span></h3>
                 <div class="status-value" id="apiStatus">正常</div>
                 <div class="status-detail">RESTful API | 版本: {{.version}}</div>
+                <div class="click-hint">點擊查看詳細數據</div>
             </div>
 
             <div class="status-card" onclick="showStatusDetails('cloud')">
-                <h3><span class="status-icon status-cloud"></span>雲端部署</h3>
+                <h3><span class="status-icon status-cloud"></span>雲端部署 <span class="realtime-badge">即時數據</span></h3>
                 <div class="status-value" id="cloudStatus">已部署</div>
                 <div class="status-detail">Google Cloud Run | 區域: asia-east1</div>
+                <div class="click-hint">點擊查看詳細數據</div>
             </div>
         </div>
 
