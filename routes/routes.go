@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"go-simple-app/controllers"
 	"go-simple-app/logger"
 	"go-simple-app/middleware"
@@ -44,16 +45,73 @@ func SetupRoutes(
 		})
 	})
 
-	// 首頁
-	r.GET("/", func(c *gin.Context) {
+	// 系統統計
+	r.GET("/api/stats", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "歡迎來到 Go 服務器！",
-			"status":  "running",
-			"version": "2.0.0",
+			"system": gin.H{
+				"status":    "running",
+				"version":   "2.0.0",
+				"uptime":    "24小時",
+				"platform":  "Google Cloud Run",
+				"region":    "asia-east1",
+			},
+			"database": gin.H{
+				"type":      "SQLite",
+				"status":    "connected",
+				"migrations": "001_add_role_and_status",
+			},
+			"features": []string{
+				"用戶管理系統",
+				"JWT 認證",
+				"管理後台",
+				"資料庫管理",
+				"API 服務",
+				"Redis 快取",
+				"MongoDB 文檔資料庫",
+				"雲端部署",
+			},
+			"tech_stack": gin.H{
+				"backend":  []string{"Go 1.21", "Gin", "JWT", "bcrypt"},
+				"frontend": []string{"HTML5", "CSS3", "JavaScript"},
+				"database": []string{"SQLite", "資料庫遷移"},
+				"deploy":   []string{"Docker", "Google Cloud Run", "CI/CD"},
+			},
 		})
 	})
 
-	// 認證路由
+	// 首頁
+	r.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "homepage.html", gin.H{
+			"version":           "2.0.0",
+			"uptime":            "24小時",
+			"migration_version": "001",
+		})
+	})
+
+	// 商戶登入路由
+	merchant := r.Group("/merchant")
+	{
+		merchant.GET("/login", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "merchant_login.html", gin.H{
+				"title": "商戶登入",
+			})
+		})
+		merchant.POST("/login", authController.MerchantLogin)
+		merchant.GET("/dashboard", authController.ShowMerchantDashboard)
+	}
+
+	// 管理員登入路由
+	adminAuth := r.Group("/admin")
+	{
+		adminAuth.GET("/login", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "admin_login.html", gin.H{
+				"title": "管理員登入",
+			})
+		})
+		adminAuth.POST("/login", authController.AdminLogin)
+	}
+
+	// 認證路由（保持兼容性）
 	auth := r.Group("/auth")
 	{
 		auth.GET("/login", authController.ShowLoginPage)

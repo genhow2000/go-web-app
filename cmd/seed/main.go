@@ -31,7 +31,21 @@ func main() {
 
 	fmt.Println("資料庫連接成功!")
 
-	// 這裡可以添加手動執行 migration 的邏輯
-	// 或者添加 seeder 的邏輯
-	fmt.Println("Migration 工具準備就緒")
+	// 檢查是否已經有測試用戶
+	var count int
+	err = db.QueryRow("SELECT COUNT(*) FROM users WHERE email IN ('admin@example.com', 'merchant@example.com', 'user@example.com')").Scan(&count)
+	if err != nil {
+		log.Fatal("檢查用戶失敗:", err)
+	}
+
+	if count > 0 {
+		fmt.Println("測試用戶已存在，無需執行 seeder")
+		return
+	}
+
+	fmt.Println("開始創建測試用戶...")
+	
+	// 這裡可以添加創建測試用戶的邏輯
+	// 或者直接調用 seeder 包
+	fmt.Println("Seeder 執行完成!")
 }

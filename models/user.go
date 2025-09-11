@@ -11,7 +11,7 @@ type User struct {
 	Email     string    `json:"email" db:"email"`
 	Password  string    `json:"-" db:"password"` // 不序列化密碼
 	Role      string    `json:"role" db:"role"` // "customer" 或 "admin"
-	IsActive  bool      `json:"is_active" db:"status"` // 帳戶是否啟用
+	IsActive  bool      `json:"is_active" db:"is_active"` // 帳戶是否啟用
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
@@ -26,7 +26,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) Create(user *User) error {
 	query := `
-		INSERT INTO users (name, email, password, role, status) 
+		INSERT INTO users (name, email, password, role, is_active) 
 		VALUES (?, ?, ?, ?, ?)`
 	
 	result, err := r.db.Exec(query, user.Name, user.Email, user.Password, user.Role, user.IsActive)
@@ -49,7 +49,7 @@ func (r *UserRepository) Create(user *User) error {
 
 func (r *UserRepository) GetByEmail(email string) (*User, error) {
 	user := &User{}
-	query := `SELECT id, name, email, password, role, status, created_at, updated_at FROM users WHERE email = ?`
+	query := `SELECT id, name, email, password, role, is_active, created_at, updated_at FROM users WHERE email = ?`
 	
 	err := r.db.QueryRow(query, email).Scan(
 		&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.IsActive,
@@ -65,7 +65,7 @@ func (r *UserRepository) GetByEmail(email string) (*User, error) {
 
 func (r *UserRepository) GetByID(id int) (*User, error) {
 	user := &User{}
-	query := `SELECT id, name, email, password, role, status, created_at, updated_at FROM users WHERE id = ?`
+	query := `SELECT id, name, email, password, role, is_active, created_at, updated_at FROM users WHERE id = ?`
 	
 	err := r.db.QueryRow(query, id).Scan(
 		&user.ID, &user.Name, &user.Email, &user.Password, &user.Role, &user.IsActive,
@@ -80,7 +80,7 @@ func (r *UserRepository) GetByID(id int) (*User, error) {
 }
 
 func (r *UserRepository) GetAll() ([]*User, error) {
-	query := `SELECT id, name, email, role, status, created_at, updated_at FROM users ORDER BY created_at DESC`
+	query := `SELECT id, name, email, role, is_active, created_at, updated_at FROM users ORDER BY created_at DESC`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (r *UserRepository) GetAll() ([]*User, error) {
 func (r *UserRepository) Update(user *User) error {
 	query := `
 		UPDATE users 
-		SET name = ?, email = ?, role = ?, status = ?, updated_at = CURRENT_TIMESTAMP 
+		SET name = ?, email = ?, role = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP 
 		WHERE id = ?`
 	
 	_, err := r.db.Exec(query, user.Name, user.Email, user.Role, user.IsActive, user.ID)
@@ -125,7 +125,7 @@ func (r *UserRepository) Count() (int, error) {
 
 // 根據角色獲取用戶
 func (r *UserRepository) GetByRole(role string) ([]*User, error) {
-	query := `SELECT id, name, email, role, status, created_at, updated_at FROM users WHERE role = ? ORDER BY created_at DESC`
+	query := `SELECT id, name, email, role, is_active, created_at, updated_at FROM users WHERE role = ? ORDER BY created_at DESC`
 	rows, err := r.db.Query(query, role)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func (r *UserRepository) GetByRole(role string) ([]*User, error) {
 
 // 更新用戶狀態
 func (r *UserRepository) UpdateStatus(id int, isActive bool) error {
-	query := `UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	query := `UPDATE users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
 	_, err := r.db.Exec(query, isActive, id)
 	return err
 }

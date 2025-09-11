@@ -62,6 +62,12 @@ func Init() error {
 		return fmt.Errorf("執行遷移失敗: %w", err)
 	}
 
+	// 執行 seeder
+	seeder := NewSeeder(DB)
+	if err := seeder.RunSeeders(); err != nil {
+		return fmt.Errorf("執行 seeder 失敗: %w", err)
+	}
+
 	return nil
 }
 
@@ -74,7 +80,7 @@ func createTables() error {
 		email VARCHAR(100) UNIQUE NOT NULL,
 		password VARCHAR(255) NOT NULL,
 		role VARCHAR(50) DEFAULT 'user',
-		status VARCHAR(50) DEFAULT 'active',
+		is_active INTEGER DEFAULT 1,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`
