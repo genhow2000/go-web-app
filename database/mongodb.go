@@ -36,13 +36,17 @@ func InitMongoDB() error {
 	defer cancel()
 
 	// 连接MongoDB
+	log.Printf("Connecting to MongoDB...")
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
+		log.Printf("MongoDB connection failed: %v", err)
 		return fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 
 	// 测试连接
+	log.Printf("Testing MongoDB connection...")
 	if err = client.Ping(ctx, nil); err != nil {
+		log.Printf("MongoDB ping failed: %v", err)
 		return fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 

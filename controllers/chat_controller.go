@@ -48,6 +48,19 @@ func (cc *ChatController) CreateConversation(c *gin.Context) {
 		return
 	}
 
+	// 检查MongoDB是否可用
+	if !cc.chatService.IsMongoDBConnected() {
+		// MongoDB不可用，返回模拟对话ID
+		responseData := gin.H{
+			"conversation_id": "sim_" + fmt.Sprintf("%d", time.Now().Unix()),
+			"success":         true,
+			"is_anonymous":    isAnonymous,
+			"simulation_mode": true,
+		}
+		c.JSON(http.StatusOK, responseData)
+		return
+	}
+
 	response, err := cc.chatService.CreateConversation(userID, req.Title)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -104,6 +117,40 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 			})
 			return
 		}
+	}
+
+	// 检查MongoDB是否可用
+	if !cc.chatService.IsMongoDBConnected() {
+		// MongoDB不可用，使用模拟模式
+		aiResponse := cc.getFallbackResponse(req.Message)
+		
+		// 返回模拟响应
+		responseData := gin.H{
+			"success": true,
+			"conversation_id": req.ConversationID,
+			"user_message": gin.H{
+				"content": req.Message,
+				"role": "user",
+				"timestamp": time.Now(),
+			},
+			"ai_message": gin.H{
+				"content": aiResponse,
+				"role": "assistant", 
+				"timestamp": time.Now(),
+			},
+			"is_anonymous": isAnonymous,
+			"simulation_mode": true,
+		}
+
+		// 如果是匿名用户，添加使用统计
+		if isAnonymous {
+			identifier := cc.getAnonymousIdentifier(c)
+			usageStats := cc.rateLimitService.GetUsageStats(identifier, true)
+			responseData["usage_stats"] = usageStats
+		}
+
+		c.JSON(http.StatusOK, responseData)
+		return
 	}
 
 	// 验证对话是否属于当前用户（包括匿名用户）
