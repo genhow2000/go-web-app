@@ -32,8 +32,8 @@ RUN apk --no-cache add ca-certificates
 # 設置工作目錄
 WORKDIR /root/
 
-# 創建資料庫目錄 (統一使用 /tmp)
-RUN mkdir -p /tmp
+# 創建資料庫目錄
+RUN mkdir -p /tmp && mkdir -p /app/data
 
 # 從構建階段複製二進制文件和模板
 COPY --from=builder /app/main .

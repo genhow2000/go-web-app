@@ -140,11 +140,17 @@ func runMigrations() error {
 
 // createMigrationsTable 創建遷移記錄表
 func createMigrationsTable() error {
+	// 先刪除舊的遷移記錄表（如果存在）
+	DB.Exec("DROP TABLE IF EXISTS migrations")
+	
+	// 創建新的遷移記錄表
 	query := `
-	CREATE TABLE IF NOT EXISTS migrations (
-		version INTEGER PRIMARY KEY,
+	CREATE TABLE migrations (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		version INTEGER NOT NULL,
 		name TEXT NOT NULL,
-		executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		executed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE(version)
 	)`
 	_, err := DB.Exec(query)
 	return err

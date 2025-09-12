@@ -9,6 +9,7 @@ import (
 	"go-simple-app/database"
 	"go-simple-app/logger"
 	"go-simple-app/middleware"
+	"go-simple-app/models"
 	"go-simple-app/services"
 
 	"github.com/gin-gonic/gin"
@@ -82,14 +83,37 @@ func SetupRoutes(
 		})
 	})
 
-	// 首頁
-	r.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "homepage.html", gin.H{
-			"version":           "2.0.0",
-			"uptime":            "24小時",
-			"migration_version": "001",
-		})
-	})
+	// 初始化商城控制器
+	productRepo := models.NewProductRepository(database.DB)
+	mallController := controllers.NewMallController(productRepo)
+
+	// 商城首頁
+	r.GET("/", mallController.ShowHomepage)
+
+	// 技術展示頁面
+	r.GET("/tech-showcase", mallController.ShowTechShowcase)
+
+	// 商城API路由
+	api := r.Group("/api")
+	{
+		// 商品相關API
+		api.GET("/categories", mallController.GetCategories)
+		api.GET("/products/featured", mallController.GetFeaturedProducts)
+		api.GET("/products", mallController.GetProducts)
+		api.GET("/products/category/:category", mallController.GetProductsByCategory)
+		api.GET("/products/search", mallController.SearchProducts)
+		api.GET("/products/:id", mallController.GetProduct)
+	}
+
+	// 商城頁面路由
+	{
+		// 商品詳情頁面
+		r.GET("/product/:id", mallController.ShowProductPage)
+		// 分類頁面
+		r.GET("/category/:category", mallController.ShowCategoryPage)
+		// 搜尋結果頁面
+		r.GET("/search", mallController.ShowSearchPage)
+	}
 
 	// 通用文檔頁面
 	r.GET("/docs/:type", func(c *gin.Context) {

@@ -37,11 +37,11 @@ func (sm *SeederManager) RunAll() error {
 		return err
 	}
 
-	// 未來可以在這裡添加其他 seeder
-	// productSeeder := NewProductSeeder(sm.db)
-	// if err := productSeeder.Run(); err != nil {
-	//     return err
-	// }
+	// 商品 seeder
+	productSeeder := NewProductSeeder(sm.db)
+	if err := productSeeder.Run(); err != nil {
+		return err
+	}
 
 	log.Println("所有 seeder 執行完成!")
 	return nil
@@ -69,11 +69,11 @@ func (sm *SeederManager) ClearAll() error {
 		return err
 	}
 
-	// 未來可以在這裡添加其他 seeder 的清除
-	// productSeeder := NewProductSeeder(sm.db)
-	// if err := productSeeder.Clear(); err != nil {
-	//     return err
-	// }
+	// 商品 seeder 清除
+	productSeeder := NewProductSeeder(sm.db)
+	if err := productSeeder.Clear(); err != nil {
+		return err
+	}
 
 	log.Println("所有測試數據已清除!")
 	return nil
@@ -91,10 +91,9 @@ func (sm *SeederManager) RunSpecific(seederName string) error {
 	case "admin":
 		adminSeeder := NewAdminSeeder(sm.db)
 		return adminSeeder.Run()
-	// 未來可以添加其他 seeder
-	// case "product":
-	//     productSeeder := NewProductSeeder(sm.db)
-	//     return productSeeder.Run()
+	case "product":
+		productSeeder := NewProductSeeder(sm.db)
+		return productSeeder.Run()
 	default:
 		log.Printf("未知的 seeder: %s", seederName)
 		return nil

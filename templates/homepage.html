@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>阿和的Go 全端系統展示 - 技術能力展示平台</title>
+    <title>阿和商城 - 精選商品，優質服務</title>
     <style>
         * {
             margin: 0;
@@ -15,206 +15,71 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background-color: #f8f9fa;
         }
 
-        .container {
+        /* 導航欄 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .status-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .status-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
-        .status-card {
-            cursor: pointer;
-        }
-
-        .status-card h3 {
-            color: #4a5568;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
+            padding: 0 20px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .status-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .status-online { background: #48bb78; }
-        .status-database { background: #4299e1; }
-        .status-api { background: #ed8936; }
-        .status-cloud { background: #9f7aea; }
-
-        .status-value {
-            font-size: 2rem;
+        .logo {
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-
-        .status-detail {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        .tech-stack {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .tech-stack h2 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .tech-categories {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .tech-category h3 {
-            color: #4a5568;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 5px;
-        }
-
-        .tech-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            color: #718096;
-        }
-
-        .tech-item::before {
-            content: "✓";
-            color: #48bb78;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .features {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .features h2 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .feature-item {
-            text-align: center;
-            padding: 20px;
-            border-radius: 10px;
-            background: #f7fafc;
-            transition: background 0.3s ease;
-        }
-
-        .feature-item:hover {
-            background: #edf2f7;
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .feature-title {
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .feature-desc {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-
-        .cta-section {
-            text-align: center;
+            text-decoration: none;
             color: white;
         }
 
-        .cta-buttons {
+        .nav-links {
             display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
         }
 
         .btn {
-            display: inline-block;
-            padding: 12px 30px;
+            padding: 0.5rem 1.5rem;
             border-radius: 25px;
             text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            transition: all 0.3s;
             border: 2px solid transparent;
         }
 
         .btn-primary {
             background: white;
             color: #667eea;
-            border-color: white;
         }
 
         .btn-primary:hover {
@@ -223,463 +88,743 @@
             border-color: white;
         }
 
-        .btn-secondary {
+        .btn-outline {
             background: transparent;
             color: white;
             border-color: white;
         }
 
-        .btn-secondary:hover {
+        .btn-outline:hover {
             background: white;
             color: #667eea;
         }
 
-        .footer {
+        /* 英雄區域 */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
             text-align: center;
-            color: white;
-            margin-top: 40px;
-            opacity: 0.8;
         }
 
-        /* 模態框樣式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 20px;
-            width: 90%;
+        .hero-content {
             max-width: 800px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: modalSlideIn 0.3s ease;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .modal-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 20px 20px 0 0;
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .search-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
+        .search-bar input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: none;
+            outline: none;
+            font-size: 1rem;
         }
 
-        .close {
+        .search-bar button {
+            background: #667eea;
             color: white;
-            font-size: 28px;
-            font-weight: bold;
+            border: none;
+            padding: 1rem 2rem;
             cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        .close:hover {
-            opacity: 0.7;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .detail-section {
-            margin-bottom: 25px;
-        }
-
-        .detail-section h3 {
-            color: #2d3748;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-        }
-
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f7fafc;
-        }
-
-        .detail-item:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
             font-weight: 600;
-            color: #4a5568;
+            transition: background 0.3s;
         }
 
-        .detail-value {
+        .search-bar button:hover {
+            background: #5a6fd8;
+        }
+
+        /* 分類導航 */
+        .categories {
+            background: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
             color: #2d3748;
-            font-family: 'Courier New', monospace;
-            background: #f7fafc;
-            padding: 4px 8px;
-            border-radius: 4px;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .category-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        /* 精選商品 */
+        .featured-products {
+            padding: 4rem 0;
+            background: #f8f9fa;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-description {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .current-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #e53e3e;
+        }
+
+        .original-price {
+            font-size: 1rem;
+            color: #a0aec0;
+            text-decoration: line-through;
+        }
+
+        .product-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
-            text-transform: uppercase;
         }
 
-        .status-online { background: #c6f6d5; color: #22543d; }
-        .status-offline { background: #fed7d7; color: #742a2a; }
-        .status-warning { background: #fef5e7; color: #744210; }
+        .badge-featured {
+            background: #fef5e7;
+            color: #744210;
+        }
 
-        .realtime-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .badge-sale {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-add-cart {
+            flex: 1;
+            background: #667eea;
             color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
             font-weight: 600;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
+            cursor: pointer;
+            transition: background 0.3s;
         }
 
-        .click-hint {
-            font-size: 0.8rem;
-            color: #667eea;
-            font-weight: 500;
-            margin-top: 8px;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
+        .btn-add-cart:hover {
+            background: #5a6fd8;
         }
 
-        .status-card:hover .click-hint {
-            opacity: 1;
+        .btn-favorite {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-            100% {
-                opacity: 1;
-            }
+        .btn-favorite:hover {
+            background: #edf2f7;
         }
 
+        /* 促銷橫幅 */
+        .promo-banner {
+            background: linear-gradient(135deg, #ff6b6b, #ffa726);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .promo-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .promo-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .promo-description {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .promo-code {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* 特色服務 */
+        .features {
+            background: white;
+            padding: 4rem 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: #718096;
+        }
+
+        /* 頁腳 */
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section ul li a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #4a5568;
+            color: #a0aec0;
+        }
+
+        /* 技術展示按鈕 */
+        .tech-showcase-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .tech-showcase-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        /* 響應式設計 */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
+            .nav-links {
+                display: none;
             }
-            
-            .cta-buttons {
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .search-bar {
                 flex-direction: column;
-                align-items: center;
+                border-radius: 15px;
             }
 
-            .modal-content {
-                width: 95%;
-                margin: 10% auto;
+            .search-bar input {
+                border-radius: 15px 15px 0 0;
             }
 
-            .modal-header {
-                padding: 15px 20px;
+            .search-bar button {
+                border-radius: 0 0 15px 15px;
             }
 
-            .modal-body {
-                padding: 20px;
+            .category-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
+
+            .product-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        /* 載入動畫 */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 阿和 Go 全端系統展示</h1>
-            <p>現代化 Web 應用技術能力展示平台</p>
-        </div>
-
-        <div class="status-grid">
-            <div class="status-card" onclick="showStatusDetails('system')">
-                <h3><span class="status-icon status-online"></span>系統狀態 <span class="realtime-badge">即時數據</span></h3>
-                <div class="status-value" id="systemStatus">運行中</div>
-                <div class="status-detail">服務器運行時間: <span id="uptime">{{.uptime}}</span></div>
-                <div class="click-hint">點擊查看詳細數據</div>
-            </div>
-
-            <div class="status-card" onclick="showStatusDetails('database')">
-                <h3><span class="status-icon status-database"></span>資料庫 <span class="realtime-badge">即時數據</span></h3>
-                <div class="status-value" id="dbStatus">已連接</div>
-                <div class="status-detail">SQLite 資料庫 | 遷移版本: {{.migration_version}}</div>
-                <div class="click-hint">點擊查看詳細數據</div>
-            </div>
-
-            <div class="status-card" onclick="showStatusDetails('api')">
-                <h3><span class="status-icon status-api"></span>API 服務 <span class="realtime-badge">即時數據</span></h3>
-                <div class="status-value" id="apiStatus">正常</div>
-                <div class="status-detail">RESTful API | 版本: {{.version}}</div>
-                <div class="click-hint">點擊查看詳細數據</div>
-            </div>
-
-            <div class="status-card" onclick="showStatusDetails('cloud')">
-                <h3><span class="status-icon status-cloud"></span>雲端部署 <span class="realtime-badge">即時數據</span></h3>
-                <div class="status-value" id="cloudStatus">已部署</div>
-                <div class="status-detail">Google Cloud Run | 區域: asia-east1</div>
-                <div class="click-hint">點擊查看詳細數據</div>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🏪 阿和商城</a>
+            <ul class="nav-links">
+                <li><a href="#home">首頁</a></li>
+                <li><a href="#categories">分類</a></li>
+                <li><a href="#products">商品</a></li>
+                <li><a href="#about">關於我們</a></li>
+                <li><a href="/tech-showcase">技術展示</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="/customer/login" class="btn btn-outline">登入</a>
+                <a href="/customer/register" class="btn btn-primary">註冊</a>
             </div>
         </div>
+    </nav>
 
-        <div class="features">
-            <h2>✨ 系統功能(可點擊查看MD)</h2>
+    <!-- 英雄區域 -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>發現精選商品</h1>
+            <p>優質商品，優惠價格，讓您享受最好的購物體驗</p>
+            <div class="search-bar">
+                <input type="text" placeholder="搜尋您想要的商品..." id="searchInput">
+                <button onclick="searchProducts()">搜尋</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 分類導航 -->
+    <section class="categories" id="categories">
+        <div class="container">
+            <h2 class="section-title">商品分類</h2>
+            <div class="category-grid" id="categoryGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>載入分類中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 促銷橫幅 -->
+    <section class="promo-banner">
+        <div class="promo-content">
+            <h2 class="promo-title">🎉 新年特惠活動</h2>
+            <p class="promo-description">全場商品8折優惠，滿額免運費，限時優惠不容錯過！</p>
+            <div class="promo-code">優惠碼：NEWYEAR2025</div>
+        </div>
+    </section>
+
+    <!-- 精選商品 -->
+    <section class="featured-products" id="products">
+        <div class="container">
+            <h2 class="section-title">精選商品</h2>
+            <div class="product-grid" id="productGrid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>載入商品中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 特色服務 -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">為什麼選擇我們</h2>
             <div class="feature-grid">
-                <div class="feature-item" onclick="window.location.href='/docs/user-management'" style="cursor: pointer;">
-                    <div class="feature-icon">👥</div>
-                    <div class="feature-title">用戶管理</div>
-                    <div class="feature-desc">完整的用戶註冊、登入、權限管理系統</div>
+                <div class="feature-item">
+                    <div class="feature-icon">🚚</div>
+                    <h3 class="feature-title">快速配送</h3>
+                    <p class="feature-description">24小時內發貨，3-5天送達，讓您快速收到心儀商品</p>
                 </div>
-                <div class="feature-item" onclick="window.location.href='/docs/auth'" style="cursor: pointer;">
-                    <div class="feature-icon">🔐</div>
-                    <div class="feature-title">安全認證</div>
-                    <div class="feature-desc">JWT Token 認證、密碼加密、會話管理</div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <h3 class="feature-title">安全支付</h3>
+                    <p class="feature-description">多種支付方式，銀行級安全加密，保障您的資金安全</p>
                 </div>
-                <div class="feature-item" onclick="window.location.href='/docs/admin'" style="cursor: pointer;">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-title">管理後台</div>
-                    <div class="feature-desc">功能完整的管理界面，支援 CRUD 操作</div>
+                <div class="feature-item">
+                    <div class="feature-icon">💎</div>
+                    <h3 class="feature-title">品質保證</h3>
+                    <p class="feature-description">嚴選優質商品，7天無理由退換，讓您買得放心</p>
                 </div>
-                <div class="feature-item" onclick="window.location.href='/docs/db-management'" style="cursor: pointer;">
-                    <div class="feature-icon">🗄️</div>
-                    <div class="feature-title">資料庫管理</div>
-                    <div class="feature-desc">內建資料庫管理工具，支援 SQL 查詢</div>
-                </div>
-                <div class="feature-item" onclick="window.location.href='/docs/monitoring'" style="cursor: pointer;">
-                    <div class="feature-icon">📈</div>
-                    <div class="feature-title">系統監控</div>
-                    <div class="feature-desc">實時系統狀態監控、日誌查看</div>
-                </div>
-                <div class="feature-item" onclick="window.location.href='/docs/api'" style="cursor: pointer;">
-                    <div class="feature-icon">🌐</div>
-                    <div class="feature-title">API 服務</div>
-                    <div class="feature-desc">RESTful API 設計，支援前後端分離</div>
-                </div>
-                <div class="feature-item" onclick="window.location.href='/docs/redis'" style="cursor: pointer;">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-title">Redis 快取</div>
-                    <div class="feature-desc">高效能記憶體快取，提升系統性能</div>
-                </div>
-                <div class="feature-item" onclick="window.location.href='/docs/mongodb'" style="cursor: pointer;">
-                    <div class="feature-icon">📄</div>
-                    <div class="feature-title">MongoDB 文檔</div>
-                    <div class="feature-desc">NoSQL 文檔資料庫，支援複雜資料結構</div>
-                </div>
-                <div class="feature-item" onclick="window.location.href='/docs/migration'" style="cursor: pointer;">
-                    <div class="feature-icon">🔄</div>
-                    <div class="feature-title">自製 Migration</div>
-                    <div class="feature-desc">完全自製的資料庫遷移系統，支援版本控制</div>
-                </div>
-                <div class="feature-item" onclick="window.location.href='/docs/seeder'" style="cursor: pointer;">
-                    <div class="feature-icon">🌱</div>
-                    <div class="feature-title">自製 Seeder</div>
-                    <div class="feature-desc">自動化測試數據生成，支援重複執行保護</div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">精準推薦</h3>
+                    <p class="feature-description">基於AI的智能推薦，為您推薦最適合的商品</p>
                 </div>
             </div>
         </div>
+    </section>
 
-        <div class="tech-stack">
-            <h2>🛠️ 技術棧</h2>
-            <div class="tech-categories">
-                <div class="tech-category">
-                    <h3>後端技術</h3>
-                    <div class="tech-item">Go 1.21</div>
-                    <div class="tech-item">Gin Web Framework</div>
-                    <div class="tech-item">JWT 認證</div>
-                    <div class="tech-item">bcrypt 密碼加密</div>
-                    <div class="tech-item">SQLite 資料庫</div>
-                    <div class="tech-item">Redis 快取</div>
-                    <div class="tech-item">MongoDB 文檔資料庫</div>
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>購物指南</h3>
+                    <ul>
+                        <li><a href="#">購物流程</a></li>
+                        <li><a href="#">配送說明</a></li>
+                        <li><a href="#">退換貨政策</a></li>
+                        <li><a href="#">常見問題</a></li>
+                    </ul>
                 </div>
-                <div class="tech-category">
-                    <h3>前端技術</h3>
-                    <div class="tech-item">HTML5 + CSS3</div>
-                    <div class="tech-item">JavaScript ES6+</div>
-                    <div class="tech-item">響應式設計</div>
-                    <div class="tech-item">現代化 UI</div>
+                <div class="footer-section">
+                    <h3>客戶服務</h3>
+                    <ul>
+                        <li><a href="#">聯絡我們</a></li>
+                        <li><a href="#">在線客服</a></li>
+                        <li><a href="#">意見反饋</a></li>
+                        <li><a href="#">售後服務</a></li>
+                    </ul>
                 </div>
-                <div class="tech-category">
-                    <h3>部署與運維</h3>
-                    <div class="tech-item">Docker 容器化</div>
-                    <div class="tech-item">Google Cloud Run</div>
-                    <div class="tech-item">CI/CD 自動部署</div>
-                    <div class="tech-item">自製 Migration 系統</div>
-                    <div class="tech-item">自製 Seeder 系統</div>
-                    <div class="tech-item">日誌監控系統</div>
+                <div class="footer-section">
+                    <h3>關於我們</h3>
+                    <ul>
+                        <li><a href="#">公司簡介</a></li>
+                        <li><a href="#">招聘信息</a></li>
+                        <li><a href="#">合作夥伴</a></li>
+                        <li><a href="#">隱私政策</a></li>
+                    </ul>
                 </div>
-                <div class="tech-category">
-                    <h3>資料庫管理</h3>
-                    <div class="tech-item">SQLite 資料庫</div>
-                    <div class="tech-item">版本控制遷移</div>
-                    <div class="tech-item">自動測試數據</div>
-                    <div class="tech-item">重複執行保護</div>
-                    <div class="tech-item">執行記錄追蹤</div>
+                <div class="footer-section">
+                    <h3>關注我們</h3>
+                    <ul>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">YouTube</a></li>
+                    </ul>
                 </div>
             </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 阿和商城. 版權所有 | 技術展示平台</p>
+            </div>
         </div>
+    </footer>
 
-        <div class="cta-section">
-            <h2>🎯 技術能力展示</h2>
-            <p>這個系統展示了完整的全端開發能力，包括後端 API 設計、前端界面開發、資料庫設計、雲端部署等技術。</p>
-            <p><strong>特別亮點：</strong>由於 Go 沒有內建的 Migration 和 Seeder 系統，我們完全自製了這些功能，展現了深度技術理解和自製能力。</p>
-            <div class="cta-buttons">
-                <a href="/merchant/login" class="btn btn-primary">商戶登入</a>
-                <a href="/admin/login" class="btn btn-secondary">管理員登入</a>
-                <a href="/admin/db/login" class="btn btn-secondary">資料庫管理</a>
-                <a href="/health" class="btn btn-secondary">API 狀態</a>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>© 2025 Go 全端系統展示 | 技術能力展示平台</p>
-        </div>
-    </div>
-
-    <!-- 模態框 -->
-    <div id="statusModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">系統詳情</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="modal-body" id="modalBody">
-                <div class="loading">載入中...</div>
-            </div>
-        </div>
-    </div>
+    <!-- 技術展示按鈕 -->
+    <a href="/tech-showcase" class="tech-showcase-btn">🚀 技術展示</a>
 
     <script>
-        // 顯示狀態詳情
-        function showStatusDetails(type) {
-            const modal = document.getElementById('statusModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalBody = document.getElementById('modalBody');
-            
-            // 設置標題
-            const titles = {
-                'system': '系統狀態詳情',
-                'database': '資料庫詳情',
-                'api': 'API 服務詳情',
-                'cloud': '雲端部署詳情'
-            };
-            modalTitle.textContent = titles[type] || '系統詳情';
-            
-            // 顯示模態框
-            modal.style.display = 'block';
-            modalBody.innerHTML = '<div class="loading">載入中...</div>';
-            
-            // 載入對應的詳細信息
-            loadStatusDetails(type);
-        }
-
-        // 載入狀態詳情
-        async function loadStatusDetails(type) {
+        // 載入分類
+        async function loadCategories() {
             try {
-                const response = await fetch(`/api/status/${type}`);
+                const response = await fetch('/api/categories');
                 if (response.ok) {
-                    const data = await response.json();
-                    displayStatusDetails(data);
+                    const categories = await response.json();
+                    displayCategories(categories);
                 } else {
-                    throw new Error('載入失敗');
+                    throw new Error('載入分類失敗');
                 }
             } catch (error) {
-                document.getElementById('modalBody').innerHTML = 
-                    '<div class="loading">載入失敗，請稍後再試。</div>';
+                console.error('載入分類失敗:', error);
+                document.getElementById('categoryGrid').innerHTML = 
+                    '<div class="loading">載入分類失敗，請稍後再試</div>';
             }
         }
 
-        // 顯示狀態詳情內容
-        function displayStatusDetails(data) {
-            const modalBody = document.getElementById('modalBody');
+        // 顯示分類
+        function displayCategories(categories) {
+            const categoryGrid = document.getElementById('categoryGrid');
+            const categoryIcons = {
+                '電子產品': '📱',
+                '服飾': '👕',
+                '家居': '🏠',
+                '美妝': '💄',
+                '運動': '⚽',
+                '食品': '🍎',
+                '圖書': '📚',
+                '其他': '📦'
+            };
+
             let html = '';
-            
-            for (const section of data.sections) {
-                html += `<div class="detail-section">`;
-                html += `<h3>${section.title}</h3>`;
-                for (const item of section.items) {
-                    html += `<div class="detail-item">`;
-                    html += `<span class="detail-label">${item.label}</span>`;
-                    if (item.status) {
-                        html += `<span class="status-badge status-${item.status}">${item.value}</span>`;
-                    } else {
-                        html += `<span class="detail-value">${item.value}</span>`;
-                    }
-                    html += `</div>`;
+            categories.forEach(category => {
+                const icon = categoryIcons[category] || '📦';
+                html += `
+                    <div class="category-card" onclick="filterByCategory('${category}')">
+                        <div class="category-icon">${icon}</div>
+                        <div class="category-name">${category}</div>
+                    </div>
+                `;
+            });
+            categoryGrid.innerHTML = html;
+        }
+
+        // 載入商品
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products/featured?limit=8');
+                if (response.ok) {
+                    const products = await response.json();
+                    displayProducts(products);
+                } else {
+                    throw new Error('載入商品失敗');
                 }
-                html += `</div>`;
-            }
-            
-            modalBody.innerHTML = html;
-        }
-
-        // 關閉模態框
-        function closeModal() {
-            document.getElementById('statusModal').style.display = 'none';
-        }
-
-        // 點擊模態框外部關閉
-        window.onclick = function(event) {
-            const modal = document.getElementById('statusModal');
-            if (event.target == modal) {
-                closeModal();
+            } catch (error) {
+                console.error('載入商品失敗:', error);
+                document.getElementById('productGrid').innerHTML = 
+                    '<div class="loading">載入商品失敗，請稍後再試</div>';
             }
         }
 
-        // 實時更新系統狀態
-        function updateSystemStatus() {
-            fetch('/health')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('systemStatus').textContent = data.status === 'healthy' ? '運行中' : '異常';
-                    document.getElementById('dbStatus').textContent = data.database === 'connected' ? '已連接' : '斷開';
-                    document.getElementById('apiStatus').textContent = '正常';
-                })
-                .catch(error => {
-                    console.error('狀態更新失敗:', error);
-                });
+        // 顯示商品
+        function displayProducts(products) {
+            const productGrid = document.getElementById('productGrid');
+            let html = '';
+
+            products.forEach(product => {
+                const originalPrice = product.original_price ? 
+                    `<span class="original-price">NT$ ${product.original_price.toLocaleString()}</span>` : '';
+                
+                const badges = [];
+                if (product.is_featured) badges.push('<span class="badge badge-featured">精選</span>');
+                if (product.is_on_sale) badges.push('<span class="badge badge-sale">特價</span>');
+
+                html += `
+                    <div class="product-card" onclick="viewProduct(${product.id})">
+                        <img src="${product.image_url || 'https://via.placeholder.com/300x200?text=商品圖片'}" 
+                             alt="${product.name}" class="product-image">
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-description">${product.description}</p>
+                            <div class="product-badges">${badges.join('')}</div>
+                            <div class="product-price">
+                                <span class="current-price">NT$ ${product.price.toLocaleString()}</span>
+                                ${originalPrice}
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${product.id})">
+                                    加入購物車
+                                </button>
+                                <button class="btn-favorite" onclick="event.stopPropagation(); toggleFavorite(${product.id})">
+                                    ❤️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            productGrid.innerHTML = html;
         }
 
-        // 每30秒更新一次狀態
-        setInterval(updateSystemStatus, 30000);
-        
-        // 頁面載入時更新一次
-        updateSystemStatus();
+        // 搜尋商品
+        function searchProducts() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (keyword) {
+                window.location.href = `/search?q=${encodeURIComponent(keyword)}`;
+            }
+        }
+
+        // 按分類篩選
+        function filterByCategory(category) {
+            window.location.href = `/category/${encodeURIComponent(category)}`;
+        }
+
+        // 查看商品詳情
+        function viewProduct(productId) {
+            window.location.href = `/product/${productId}`;
+        }
+
+        // 加入購物車
+        function addToCart(productId) {
+            // 這裡需要實現加入購物車的邏輯
+            alert('商品已加入購物車！');
+        }
+
+        // 切換收藏
+        function toggleFavorite(productId) {
+            // 這裡需要實現收藏功能的邏輯
+            alert('已加入收藏！');
+        }
+
+        // 頁面載入時執行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadProducts();
+
+            // 搜尋框回車事件
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchProducts();
+                }
+            });
+        });
     </script>
 </body>
 </html>
