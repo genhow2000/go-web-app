@@ -41,6 +41,7 @@ COPY --from=builder /app/migrate .
 COPY --from=builder /app/seed .
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/md ./md
+COPY --from=builder /app/migrations ./migrations
 
 # 暴露端口
 EXPOSE 8080

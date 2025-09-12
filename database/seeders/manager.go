@@ -19,9 +19,21 @@ func NewSeederManager(db *sql.DB) *SeederManager {
 func (sm *SeederManager) RunAll() error {
 	log.Println("開始執行所有 seeder...")
 
-	// 用戶 seeder
-	userSeeder := NewUserSeeder(sm.db)
-	if err := userSeeder.Run(); err != nil {
+	// 客戶 seeder
+	customerSeeder := NewCustomerSeeder(sm.db)
+	if err := customerSeeder.Run(); err != nil {
+		return err
+	}
+
+	// 商戶 seeder
+	merchantSeeder := NewMerchantSeeder(sm.db)
+	if err := merchantSeeder.Run(); err != nil {
+		return err
+	}
+
+	// 管理員 seeder
+	adminSeeder := NewAdminSeeder(sm.db)
+	if err := adminSeeder.Run(); err != nil {
 		return err
 	}
 
@@ -39,9 +51,21 @@ func (sm *SeederManager) RunAll() error {
 func (sm *SeederManager) ClearAll() error {
 	log.Println("開始清除所有測試數據...")
 
-	// 用戶 seeder
-	userSeeder := NewUserSeeder(sm.db)
-	if err := userSeeder.Clear(); err != nil {
+	// 客戶 seeder
+	customerSeeder := NewCustomerSeeder(sm.db)
+	if err := customerSeeder.Clear(); err != nil {
+		return err
+	}
+
+	// 商戶 seeder
+	merchantSeeder := NewMerchantSeeder(sm.db)
+	if err := merchantSeeder.Clear(); err != nil {
+		return err
+	}
+
+	// 管理員 seeder
+	adminSeeder := NewAdminSeeder(sm.db)
+	if err := adminSeeder.Clear(); err != nil {
 		return err
 	}
 
@@ -58,9 +82,15 @@ func (sm *SeederManager) ClearAll() error {
 // RunSpecific 執行特定的 seeder
 func (sm *SeederManager) RunSpecific(seederName string) error {
 	switch seederName {
-	case "user":
-		userSeeder := NewUserSeeder(sm.db)
-		return userSeeder.Run()
+	case "customer":
+		customerSeeder := NewCustomerSeeder(sm.db)
+		return customerSeeder.Run()
+	case "merchant":
+		merchantSeeder := NewMerchantSeeder(sm.db)
+		return merchantSeeder.Run()
+	case "admin":
+		adminSeeder := NewAdminSeeder(sm.db)
+		return adminSeeder.Run()
 	// 未來可以添加其他 seeder
 	// case "product":
 	//     productSeeder := NewProductSeeder(sm.db)

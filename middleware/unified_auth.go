@@ -1,0 +1,71 @@
+package middleware
+
+import (
+	"net/http"
+	"strings"
+	"go-simple-app/services"
+
+	"github.com/gin-gonic/gin"
+)
+
+// 統一認證中間件 - 支持 UnifiedAuthService
+func UnifiedAuthMiddleware(authService *services.UnifiedAuthService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 從 Header 獲取 token
+		authHeader := c.GetHeader("Authorization")
+		var tokenString string
+
+		if authHeader != "" {
+			// 檢查 Bearer token 格式
+			if strings.HasPrefix(authHeader, "Bearer ") {
+				tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+			} else {
+				tokenString = authHeader
+			}
+		} else {
+			// 從 cookie 獲取 token
+			if cookie, err := c.Cookie("auth_token"); err == nil {
+				tokenString = cookie
+			} else {
+				// 從 query parameter 獲取 token (用於頁面訪問)
+				tokenString = c.Query("token")
+			}
+		}
+
+		if tokenString == "" {
+			// 如果是頁面請求，重定向到登入頁面
+			if c.Request.Header.Get("Accept") == "text/html" {
+				c.Redirect(http.StatusFound, "/customer/login")
+				c.Abort()
+				return
+			}
+			
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "未提供認證 token",
+			})
+			c.Abort()
+			return
+		}
+
+		// 驗證 token
+		user, err := authService.ValidateToken(tokenString)
+		if err != nil {
+			// 如果是頁面請求，重定向到登入頁面
+			if c.Request.Header.Get("Accept") == "text/html" {
+				c.Redirect(http.StatusFound, "/customer/login")
+				c.Abort()
+				return
+			}
+			
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "無效的 token",
+			})
+			c.Abort()
+			return
+		}
+
+		// 將用戶信息存儲到 context
+		c.Set("user", user)
+		c.Next()
+	}
+}

@@ -53,23 +53,21 @@ func main() {
 	defer database.CloseMongoDB()
 
 	// 初始化 Repository
-	userRepo := models.NewUserRepository(database.DB)
+	unifiedUserRepo := models.NewUnifiedUserRepository(database.DB)
 	logger.Info("Repository初始化完成")
 
 	// 初始化 Service
-	authService := services.NewAuthService(userRepo, &cfg.JWT)
-	userService := services.NewUserService(userRepo)
-	adminService := services.NewAdminService(userRepo)
+	unifiedAuthService := services.NewUnifiedAuthService(unifiedUserRepo, &cfg.JWT)
+	unifiedAdminService := services.NewUnifiedAdminService(unifiedUserRepo)
 	logger.Info("Service層初始化完成")
 
 	// 初始化 Controller
-	authController := controllers.NewAuthController(authService)
-	userController := controllers.NewUserController(userService)
-	adminController := controllers.NewAdminController(adminService)
+	unifiedAuthController := controllers.NewUnifiedAuthController(unifiedAuthService)
+	adminController := controllers.NewAdminController(unifiedAdminService)
 	logger.Info("Controller層初始化完成")
 
 	// 設置路由
-	router := routes.SetupRoutes(authController, userController, adminController, authService)
+	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService)
 
 	// 設置 Gin 模式
 	if cfg.Server.Host == "0.0.0.0" {

@@ -16,10 +16,9 @@ import (
 )
 
 func SetupRoutes(
-	authController *controllers.AuthController,
-	userController *controllers.UserController,
+	unifiedAuthController *controllers.UnifiedAuthController,
 	adminController *controllers.AdminController,
-	authService *services.AuthService,
+	unifiedAuthService *services.UnifiedAuthService,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -324,58 +323,57 @@ func SetupRoutes(
 		c.JSON(http.StatusOK, response)
 	})
 
-	// 商戶登入路由
+	// 客戶登入和註冊路由
+	r.GET("/customer/login", unifiedAuthController.ShowCustomerLogin)
+	r.POST("/customer/login", unifiedAuthController.CustomerLogin)
+	r.GET("/customer/register", unifiedAuthController.ShowRegisterPage)
+	r.POST("/customer/register", unifiedAuthController.Register)
+
+	// 客戶受保護路由
+	customerProtected := r.Group("/customer")
+	customerProtected.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
+	customerProtected.Use(middleware.CustomerMiddleware())
+	{
+		customerProtected.GET("/dashboard", unifiedAuthController.ShowCustomerDashboard)
+		customerProtected.GET("/profile", unifiedAuthController.GetUserProfile)
+	}
+
+	// 商戶登入和註冊路由
 	merchant := r.Group("/merchant")
 	{
-		merchant.GET("/login", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "merchant_login.html", gin.H{
-				"title": "商戶登入",
-			})
-		})
-		merchant.POST("/login", authController.MerchantLogin)
-		merchant.GET("/dashboard", authController.ShowMerchantDashboard)
+		merchant.GET("/login", unifiedAuthController.ShowMerchantLogin)
+		merchant.POST("/login", unifiedAuthController.MerchantLogin)
+		merchant.GET("/register", unifiedAuthController.ShowRegisterPage)
+		merchant.POST("/register", unifiedAuthController.Register)
 	}
 
-	// 管理員登入路由
+	// 商戶受保護路由
+	merchantProtected := r.Group("/merchant")
+	merchantProtected.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
+	merchantProtected.Use(middleware.MerchantMiddleware())
+	{
+		merchantProtected.GET("/dashboard", unifiedAuthController.ShowMerchantDashboard)
+		merchantProtected.GET("/profile", unifiedAuthController.GetUserProfile)
+	}
+
+	// 管理員登入和註冊路由
 	adminAuth := r.Group("/admin")
 	{
-		adminAuth.GET("/login", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "admin_login.html", gin.H{
-				"title": "管理員登入",
-			})
-		})
-		adminAuth.POST("/login", authController.AdminLogin)
+		adminAuth.GET("/login", unifiedAuthController.ShowAdminLogin)
+		adminAuth.POST("/login", unifiedAuthController.AdminLogin)
+		adminAuth.GET("/register", unifiedAuthController.ShowRegisterPage)
+		adminAuth.POST("/register", unifiedAuthController.Register)
 	}
 
-	// 註冊路由（保持兼容性）
-	auth := r.Group("/auth")
-	{
-		auth.GET("/register", authController.ShowRegisterPage)
-		auth.POST("/register", authController.Register)
-		auth.POST("/logout", authController.Logout)
-	}
+	// 登出路由
+	r.POST("/logout", unifiedAuthController.Logout)
 
-	// 兼容舊路由
-	r.GET("/register", authController.ShowRegisterPage)
-	r.POST("/register", authController.Register)
-	r.POST("/logout", authController.Logout)
 
-	// 受保護的路由
-	protected := r.Group("/")
-	protected.Use(middleware.AuthMiddleware(authService))
-	{
-		protected.GET("/users", userController.GetAllUsers)
-		protected.GET("/users/:id", userController.GetUserByID)
-		protected.POST("/users", userController.CreateUser)
-		protected.PUT("/users/:id", userController.UpdateUser)
-		protected.DELETE("/users/:id", userController.DeleteUser)
-	}
-
-	// 聊天功能路由（商戶和管理者都可以使用）
+	// 聊天功能路由（所有角色都可以使用）
 	chatController := controllers.NewChatController()
 	chat := r.Group("/api/chat")
-	chat.Use(middleware.AuthMiddleware(authService))
-	chat.Use(middleware.CustomerMiddleware()) // 允许customer和admin角色
+	chat.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
+	chat.Use(middleware.MultiRoleMiddleware("customer", "merchant", "admin"))
 	{
 		// 对话管理
 		chat.POST("/conversations", chatController.CreateConversation)
@@ -389,7 +387,7 @@ func SetupRoutes(
 
 	// 管理員專用路由
 	admin := r.Group("/admin")
-	admin.Use(middleware.AuthMiddleware(authService))
+	admin.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
 	admin.Use(middleware.AdminMiddleware())
 	{
 		// 管理員頁面
@@ -397,6 +395,7 @@ func SetupRoutes(
 		admin.GET("/users", adminController.ShowUserManagement)
 		admin.GET("/users/create", adminController.ShowCreateUser)
 		admin.GET("/users/:id/edit", adminController.ShowEditUser)
+		admin.GET("/profile", unifiedAuthController.GetUserProfile)
 
 		// 管理員 API
 		adminAPI := admin.Group("/api")

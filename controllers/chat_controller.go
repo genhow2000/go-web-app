@@ -43,7 +43,7 @@ func (cc *ChatController) CreateConversation(c *gin.Context) {
 	}
 
 	// 转换用户对象
-	userObj, ok := user.(*models.User)
+	userObj, ok := user.(models.UserInterface)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -52,7 +52,7 @@ func (cc *ChatController) CreateConversation(c *gin.Context) {
 		return
 	}
 
-	response, err := cc.chatService.CreateConversation(userObj.ID, req.Title)
+	response, err := cc.chatService.CreateConversation(userObj.GetID(), req.Title)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -86,7 +86,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 	}
 
 	// 转换用户对象
-	userObj, ok := user.(*models.User)
+	userObj, ok := user.(models.UserInterface)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -105,7 +105,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 		return
 	}
 
-	if conversation.UserID != userObj.ID {
+	if conversation.UserID != userObj.GetID() {
 		c.JSON(http.StatusForbidden, gin.H{
 			"success": false,
 			"error":   "Access denied to this conversation",
@@ -150,7 +150,7 @@ func (cc *ChatController) GetConversation(c *gin.Context) {
 	}
 
 	// 转换用户对象
-	userObj, ok := user.(*models.User)
+	userObj, ok := user.(models.UserInterface)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -169,7 +169,7 @@ func (cc *ChatController) GetConversation(c *gin.Context) {
 	}
 
 	// 验证对话是否属于当前用户
-	if conversation.UserID != userObj.ID {
+	if conversation.UserID != userObj.GetID() {
 		c.JSON(http.StatusForbidden, gin.H{
 			"success": false,
 			"error":   "Access denied to this conversation",
@@ -196,7 +196,7 @@ func (cc *ChatController) GetUserConversations(c *gin.Context) {
 	}
 
 	// 转换用户对象
-	userObj, ok := user.(*models.User)
+	userObj, ok := user.(models.UserInterface)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -224,7 +224,7 @@ func (cc *ChatController) GetUserConversations(c *gin.Context) {
 		limit = 100
 	}
 
-	response, err := cc.chatService.GetUserConversations(userObj.ID, limit, offset)
+	response, err := cc.chatService.GetUserConversations(userObj.GetID(), limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -258,7 +258,7 @@ func (cc *ChatController) DeleteConversation(c *gin.Context) {
 	}
 
 	// 转换用户对象
-	userObj, ok := user.(*models.User)
+	userObj, ok := user.(models.UserInterface)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -267,7 +267,7 @@ func (cc *ChatController) DeleteConversation(c *gin.Context) {
 		return
 	}
 
-	err := cc.chatService.DeleteConversation(conversationID, userObj.ID)
+	err := cc.chatService.DeleteConversation(conversationID, userObj.GetID())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -294,8 +294,8 @@ func (cc *ChatController) GetDatabaseStatus(c *gin.Context) {
 		return
 	}
 
-	userObj, ok := user.(*models.User)
-	if !ok || userObj.Role != "admin" {
+	userObj, ok := user.(models.UserInterface)
+	if !ok || userObj.GetRole() != "admin" {
 		c.JSON(http.StatusForbidden, gin.H{
 			"success": false,
 			"error":   "Admin access required",
@@ -338,8 +338,8 @@ func (cc *ChatController) CleanupOldData(c *gin.Context) {
 		return
 	}
 
-	userObj, ok := user.(*models.User)
-	if !ok || userObj.Role != "admin" {
+	userObj, ok := user.(models.UserInterface)
+	if !ok || userObj.GetRole() != "admin" {
 		c.JSON(http.StatusForbidden, gin.H{
 			"success": false,
 			"error":   "Admin access required",

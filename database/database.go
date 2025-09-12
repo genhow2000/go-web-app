@@ -73,24 +73,9 @@ func Init() error {
 
 // createTables 創建 SQLite 表
 func createTables() error {
-	query := `
-	CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(100) NOT NULL,
-		email VARCHAR(100) UNIQUE NOT NULL,
-		password VARCHAR(255) NOT NULL,
-		role VARCHAR(50) DEFAULT 'user',
-		is_active INTEGER DEFAULT 1,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)`
-
-	_, err := DB.Exec(query)
-	if err != nil {
-		return err
-	}
-
-	log.Println("SQLite 資料表創建成功!")
+	// 基本表創建已移至遷移文件中
+	// 這裡不再創建任何表，完全依賴遷移文件
+	log.Println("SQLite 資料表創建完成（由遷移文件處理）!")
 	return nil
 }
 
