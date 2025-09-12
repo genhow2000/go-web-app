@@ -40,4 +40,4 @@ steps:
       - "--min-instances"
       - "0"
       - "--set-env-vars"
-      - "DB_PATH=/tmp/app.db,MONGODB_URI=${_MONGODB_URI},MONGODB_DATABASE=chatbot,JWT_SECRET=${_JWT_SECRET},AI_PRIMARY_PROVIDER=groq,AI_FALLBACK_PROVIDER=gemini"
+      - "DB_PATH=/tmp/app.db,MONGODB_URI=${_MONGODB_URI},MONGODB_DATABASE=chatbot,JWT_SECRET=${_JWT_SECRET},AI_PRIMARY_PROVIDER=groq,AI_FALLBACK_PROVIDER=gemini,GROQ_API_KEY=${_GROQ_API_KEY},GEMINI_API_KEY=${_GEMINI_API_KEY}"
