@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"go-simple-app/database"
@@ -302,4 +303,44 @@ func (s *ChatService) GetDatabaseSize() (int64, error) {
 	}
 
 	return int64(size), nil
+}
+
+// GenerateAIResponse 生成AI回复
+func (s *ChatService) GenerateAIResponse(message, conversationID string) (string, error) {
+	// 这里可以集成外部AI服务
+	// 目前返回模拟回复
+	return s.getSimulatedAIResponse(message), nil
+}
+
+// getSimulatedAIResponse 获取模拟AI回复
+func (s *ChatService) getSimulatedAIResponse(message string) string {
+	// 简单的关键词匹配回复
+	message = strings.ToLower(message)
+	
+	if strings.Contains(message, "價格") || strings.Contains(message, "多少錢") {
+		return "我們有各種價格區間的商品，從經濟實惠到高端精品都有。您可以在商品頁面查看詳細價格信息。"
+	} else if strings.Contains(message, "推薦") || strings.Contains(message, "建議") {
+		return "根據您的需求，我推薦您查看我們的精選商品。這些商品都經過嚴格篩選，品質有保證。"
+	} else if strings.Contains(message, "配送") || strings.Contains(message, "運費") {
+		return "我們提供快速配送服務，24小時內發貨，3-5天送達。滿額還有免運費優惠！"
+	} else if strings.Contains(message, "退換") || strings.Contains(message, "售後") {
+		return "我們提供7天無理由退換貨服務，讓您買得放心。如有任何問題，我們的客服團隊隨時為您服務。"
+	} else if strings.Contains(message, "你好") || strings.Contains(message, "您好") {
+		return "您好！我是阿和商城的AI購物助手，很高興為您服務！有什麼可以幫助您的嗎？"
+	} else if strings.Contains(message, "商品") || strings.Contains(message, "產品") {
+		return "我們有豐富的商品選擇，包括電子產品、服飾、家居用品等。您可以瀏覽我們的商品分類來找到您需要的商品。"
+	} else if strings.Contains(message, "優惠") || strings.Contains(message, "折扣") {
+		return "我們經常推出各種優惠活動！目前有新年特惠，全場8折優惠，滿額還免運費。使用優惠碼 NEWYEAR2025 即可享受優惠！"
+	} else {
+		responses := []string{
+			"我了解您的需求，讓我為您推薦一些相關商品。",
+			"這是一個很好的問題！根據您的描述，我建議您查看以下分類的商品。",
+			"感謝您的詢問！我可以幫您找到最適合的商品。",
+			"我明白您想要什麼了，讓我為您搜索相關商品。",
+			"好的，我會根據您的需求為您推薦商品。",
+			"請告訴我更多關於您需求的細節，我會為您提供更精確的建議。",
+			"我們有很多優質商品可以滿足您的需求，讓我為您介紹一下。",
+		}
+		return responses[time.Now().Unix()%int64(len(responses))]
+	}
 }

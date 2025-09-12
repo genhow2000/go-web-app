@@ -393,20 +393,23 @@ func SetupRoutes(
 	r.POST("/logout", unifiedAuthController.Logout)
 
 
-	// 聊天功能路由（所有角色都可以使用）
+	// 聊天功能路由（支援匿名用戶）
 	chatController := controllers.NewChatController()
 	chat := r.Group("/api/chat")
-	chat.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
-	chat.Use(middleware.MultiRoleMiddleware("customer", "merchant", "admin"))
 	{
-		// 对话管理
+		// 对话管理（支援匿名用戶）
 		chat.POST("/conversations", chatController.CreateConversation)
-		chat.GET("/conversations", chatController.GetUserConversations)
-		chat.GET("/conversations/:id", chatController.GetConversation)
-		chat.DELETE("/conversations/:id", chatController.DeleteConversation)
-		
-		// 消息管理
 		chat.POST("/send", chatController.SendMessage)
+		
+		// 需要認證的路由
+		chatAuth := chat.Group("")
+		chatAuth.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
+		chatAuth.Use(middleware.MultiRoleMiddleware("customer", "merchant", "admin"))
+		{
+			chatAuth.GET("/conversations", chatController.GetUserConversations)
+			chatAuth.GET("/conversations/:id", chatController.GetConversation)
+			chatAuth.DELETE("/conversations/:id", chatController.DeleteConversation)
+		}
 	}
 
 	// 管理員專用路由
