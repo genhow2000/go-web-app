@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"go-simple-app/database"
 	"go-simple-app/models"
 	"go-simple-app/services"
 
@@ -49,7 +50,7 @@ func (cc *ChatController) CreateConversation(c *gin.Context) {
 	}
 
 	// 检查MongoDB是否可用
-	if !cc.chatService.IsMongoDBConnected() {
+	if !database.IsMongoDBConnected() {
 		// MongoDB不可用，返回模拟对话ID
 		responseData := gin.H{
 			"conversation_id": "sim_" + fmt.Sprintf("%d", time.Now().Unix()),
@@ -120,7 +121,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 	}
 
 	// 检查MongoDB是否可用
-	if !cc.chatService.IsMongoDBConnected() {
+	if !database.IsMongoDBConnected() {
 		// MongoDB不可用，使用模拟模式
 		aiResponse := cc.getFallbackResponse(req.Message)
 		
