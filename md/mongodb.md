@@ -152,6 +152,53 @@ update := bson.M{"$set": bson.M{"age": 26}}
 result, err := collection.UpdateOne(ctx, bson.M{"name": "張三"}, update)
 ```
 
+### AI 聊天系統操作
+
+```go
+// 創建新對話
+conversation := Conversation{
+    ID:          primitive.NewObjectID(),
+    UserID:      "user123",
+    Title:       "產品諮詢",
+    IsAnonymous: false,
+    CreatedAt:   time.Now(),
+    UpdatedAt:   time.Now(),
+}
+result, err := conversationsCollection.InsertOne(ctx, conversation)
+
+// 插入消息
+message := Message{
+    ID:             primitive.NewObjectID(),
+    ConversationID: conversation.ID,
+    Role:           "user",
+    Content:        "請推薦一些熱門的電子產品",
+    Timestamp:      time.Now(),
+    AIProvider:     "groq",
+    TokensUsed:     150,
+}
+_, err = messagesCollection.InsertOne(ctx, message)
+
+// 查詢對話歷史
+cursor, err := messagesCollection.Find(ctx, bson.M{
+    "conversation_id": conversationID,
+})
+defer cursor.Close(ctx)
+
+var messages []Message
+err = cursor.All(ctx, &messages)
+
+// 統計 AI 使用情況
+pipeline := mongo.Pipeline{
+    {{"$match", bson.M{"timestamp": bson.M{"$gte": startDate}}}},
+    {{"$group", bson.M{
+        "_id": "$ai_provider",
+        "count": bson.M{"$sum": 1},
+        "avg_tokens": bson.M{"$avg": "$tokens_used"},
+    }}},
+}
+cursor, err = messagesCollection.Aggregate(ctx, pipeline)
+```
+
 ## 📈 性能優化
 
 ### 索引策略
@@ -217,7 +264,94 @@ db.createCollection("users", {
 - 圖形查詢
 - 時間序列資料
 
+## 🤖 AI 聊天系統整合
+
+### 對話記錄存儲
+
+本系統使用 MongoDB 存儲 AI 聊天對話記錄，提供靈活的文檔結構和高效的查詢能力。
+
+#### 對話集合 (conversations)
+
+```json
+{
+  "_id": ObjectId("68c3e6d3f12bf4ac87183588"),
+  "user_id": "user123",
+  "title": "產品諮詢對話",
+  "is_anonymous": false,
+  "created_at": ISODate("2025-09-12T09:20:00Z"),
+  "updated_at": ISODate("2025-09-12T09:25:00Z"),
+  "message_count": 5,
+  "last_message": "感謝您的建議！"
+}
+```
+
+#### 消息集合 (messages)
+
+```json
+{
+  "_id": ObjectId("68c3e6d3f12bf4ac87183589"),
+  "conversation_id": ObjectId("68c3e6d3f12bf4ac87183588"),
+  "role": "user",
+  "content": "請推薦一些熱門的電子產品",
+  "timestamp": ISODate("2025-09-12T09:20:00Z"),
+  "ai_provider": "groq",
+  "tokens_used": 150
+}
+```
+
+### AI 服務統計
+
+```json
+{
+  "_id": ObjectId("68c3e6d3f12bf4ac87183590"),
+  "provider": "groq",
+  "date": ISODate("2025-09-12T00:00:00Z"),
+  "daily_usage": 45,
+  "daily_limit": 10000,
+  "error_count": 2,
+  "avg_response_time": 1.2,
+  "last_used": ISODate("2025-09-12T09:25:00Z")
+}
+```
+
+### 查詢範例
+
+```javascript
+// 查詢用戶的所有對話
+db.conversations.find({ user_id: "user123" }).sort({ updated_at: -1 });
+
+// 查詢特定對話的所有消息
+db.messages
+  .find({
+    conversation_id: ObjectId("68c3e6d3f12bf4ac87183588"),
+  })
+  .sort({ timestamp: 1 });
+
+// 統計 AI 服務使用情況
+db.messages.aggregate([
+  { $match: { timestamp: { $gte: new Date("2025-09-01") } } },
+  {
+    $group: {
+      _id: "$ai_provider",
+      count: { $sum: 1 },
+      avg_tokens: { $avg: "$tokens_used" },
+    },
+  },
+]);
+
+// 查詢匿名用戶的對話（用於分析）
+db.conversations.find({ is_anonymous: true }).limit(100);
+```
+
 ## 📊 使用場景
+
+### AI 聊天系統
+
+- 對話記錄存儲
+- 用戶行為分析
+- AI 服務統計
+- 匿名用戶追蹤
+- 對話內容搜尋
 
 ### 內容管理
 
