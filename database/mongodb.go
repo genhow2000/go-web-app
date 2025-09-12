@@ -24,6 +24,8 @@ func InitMongoDB() error {
 		return nil
 	}
 
+	log.Printf("Attempting to connect to MongoDB with URI: %s", mongoURI[:50]+"...")
+
 	databaseName := os.Getenv("MONGODB_DATABASE")
 	if databaseName == "" {
 		databaseName = "chatbot" // 默认数据库名

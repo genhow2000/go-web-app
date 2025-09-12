@@ -53,7 +53,9 @@ jobs:
             --cpu 1 \
             --max-instances 10 \
             --min-instances 0 \
-            --set-env-vars "DB_PATH=/tmp/app.db,MONGODB_URI=$MONGODB_URI,MONGODB_DATABASE=chatbot"
+            --set-env-vars "DB_PATH=/tmp/app.db" \
+            --set-env-vars "MONGODB_URI=$MONGODB_URI" \
+            --set-env-vars "MONGODB_DATABASE=chatbot"
 
       - name: Show Output
         run: |
