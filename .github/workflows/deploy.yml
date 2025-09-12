@@ -2,32 +2,60 @@ name: Deploy to Google Cloud Run
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PROJECT_ID: fleet-day-383710
+  SERVICE_NAME: go-app
+  REGION: asia-east1
+  MONGODB_URI: mongodb+srv://genhow2000_db_user:PKwCLU4qXzrpAjSY@cluster0.atzcxpw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Setup Google Cloud CLI
-        uses: google-github-actions/setup-gcloud@v2
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
 
-      - name: Configure Docker for GCR
-        run: gcloud auth configure-docker
+    - name: Configure Docker
+      run: gcloud auth configure-docker
 
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud builds submit --config cloudbuild.yaml . --async
+    - name: Build and Push Docker image
+      run: |
+        docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
+        docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
 
-      - name: Show service URL
-        run: |
-          echo "Service deployed successfully!"
-          echo "URL: https://go-app-313144253156.asia-east1.run.app"
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy $SERVICE_NAME \
+          --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
+          --platform managed \
+          --region $REGION \
+          --allow-unauthenticated \
+          --port 8080 \
+          --memory 512Mi \
+          --cpu 1 \
+          --max-instances 10 \
+          --min-instances 0 \
+          --set-env-vars "DB_PATH=/tmp/app.db,MONGODB_URI=$MONGODB_URI,MONGODB_DATABASE=chatbot"
+
+    - name: Show Output
+      run: |
+        echo "Service deployed at:"
+        gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(status.url)"
