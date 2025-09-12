@@ -1,10 +1,10 @@
-# AI服务配置指南
+# AI 服务配置指南
 
 ## 环境变量配置
 
 在部署应用之前，需要设置以下环境变量：
 
-### 必需的AI服务配置
+### 必需的 AI 服务配置
 
 ```bash
 # AI服务提供商配置
@@ -45,24 +45,27 @@ AI_SWITCH_THRESHOLD=0.8
 AI_REQUEST_TIMEOUT=30
 ```
 
-## 如何获取API密钥
+## 如何获取 API 密钥
 
-### 1. Groq API密钥
+### 1. Groq API 密钥
+
 1. 访问 [Groq Console](https://console.groq.com/)
 2. 注册/登录账户
-3. 在API Keys页面创建新的API密钥
+3. 在 API Keys 页面创建新的 API 密钥
 4. 复制密钥并设置到 `GROQ_API_KEY` 环境变量
 
-### 2. Google Gemini API密钥
+### 2. Google Gemini API 密钥
+
 1. 访问 [Google AI Studio](https://aistudio.google.com/)
-2. 登录Google账户
+2. 登录 Google 账户
 3. 创建新项目或选择现有项目
-4. 在API Keys页面创建新的API密钥
+4. 在 API Keys 页面创建新的 API 密钥
 5. 复制密钥并设置到 `GEMINI_API_KEY` 环境变量
 
 ## 部署说明
 
-### Docker部署
+### Docker 部署
+
 ```bash
 # 设置环境变量
 export GROQ_API_KEY=your_groq_api_key
@@ -73,11 +76,12 @@ docker-compose up -d
 ```
 
 ### 云平台部署
-在云平台（如Google Cloud Run、AWS、Azure等）的环境变量设置中添加上述配置。
 
-## AI服务梯队说明
+在云平台（如 Google Cloud Run、AWS、Azure 等）的环境变量设置中添加上述配置。
 
-应用使用智能AI服务梯队：
+## AI 服务梯队说明
+
+应用使用智能 AI 服务梯队：
 
 1. **主要服务**: Groq API - 快速响应，适合实时对话
 2. **备用服务**: Google Gemini API - 高质量回复，支持多语言
@@ -85,9 +89,9 @@ docker-compose up -d
 
 当主要服务失败时，系统会自动切换到备用服务，确保聊天功能不中断。
 
-## 测试AI服务
+## 测试 AI 服务
 
-使用内置的测试工具验证AI服务配置：
+使用内置的测试工具验证 AI 服务配置：
 
 ```bash
 # 构建测试镜像
@@ -104,13 +108,15 @@ docker run --rm \
 
 ## 监控和日志
 
-应用会记录详细的AI服务使用情况：
+应用会记录详细的 AI 服务使用情况：
+
 - 每个服务的使用次数
 - 错误统计
 - 切换日志
 - 响应时间
 
 查看日志：
+
 ```bash
 docker logs container_name
 ```

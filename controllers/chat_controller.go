@@ -21,9 +21,9 @@ type ChatController struct {
 }
 
 // NewChatController 创建聊天控制器
-func NewChatController() *ChatController {
+func NewChatController(chatService *services.ChatService) *ChatController {
 	return &ChatController{
-		chatService:     services.NewChatService(),
+		chatService:     chatService,
 		rateLimitService: services.NewRateLimitService(),
 	}
 }
