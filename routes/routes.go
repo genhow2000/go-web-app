@@ -20,6 +20,7 @@ func SetupRoutes(
 	unifiedAuthController *controllers.UnifiedAuthController,
 	adminController *controllers.AdminController,
 	unifiedAuthService *services.UnifiedAuthService,
+	chatController *controllers.ChatController,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -394,7 +395,6 @@ func SetupRoutes(
 
 
 	// 聊天功能路由（支援匿名用戶）
-	chatController := controllers.NewChatController()
 	chat := r.Group("/api/chat")
 	{
 		// 对话管理（支援匿名用戶）

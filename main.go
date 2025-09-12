@@ -56,18 +56,28 @@ func main() {
 	unifiedUserRepo := models.NewUnifiedUserRepository(database.DB)
 	logger.Info("Repository初始化完成")
 
+	// 初始化 AI 管理器
+	aiManager := services.NewAIManager(cfg.AI)
+	logger.Info("AI管理器初始化完成", logrus.Fields{
+		"primary_provider":   cfg.AI.PrimaryProvider,
+		"fallback_provider":  cfg.AI.FallbackProvider,
+		"simulation_provider": cfg.AI.SimulationProvider,
+	})
+
 	// 初始化 Service
 	unifiedAuthService := services.NewUnifiedAuthService(unifiedUserRepo, &cfg.JWT)
 	unifiedAdminService := services.NewUnifiedAdminService(unifiedUserRepo)
+	chatService := services.NewChatServiceWithAI(aiManager)
 	logger.Info("Service層初始化完成")
 
 	// 初始化 Controller
 	unifiedAuthController := controllers.NewUnifiedAuthController(unifiedAuthService)
 	adminController := controllers.NewAdminController(unifiedAdminService)
+	chatController := controllers.NewChatController(chatService)
 	logger.Info("Controller層初始化完成")
 
 	// 設置路由
-	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService)
+	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService, chatController)
 
 	// 設置 Gin 模式
 	if cfg.Server.Host == "0.0.0.0" {

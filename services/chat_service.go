@@ -18,6 +18,7 @@ import (
 
 type ChatService struct {
 	collection *mongo.Collection
+	aiManager  *AIManager
 }
 
 // NewChatService 创建聊天服务实例
@@ -28,7 +29,25 @@ func NewChatService() *ChatService {
 	}
 	return &ChatService{
 		collection: collection,
+		aiManager:  nil, // 将在外部设置
 	}
+}
+
+// NewChatServiceWithAI 创建带AI管理器的聊天服务实例
+func NewChatServiceWithAI(aiManager *AIManager) *ChatService {
+	collection := database.GetMongoDBCollection("conversations")
+	if collection == nil {
+		log.Println("Warning: MongoDB collection is nil, chat service will not work")
+	}
+	return &ChatService{
+		collection: collection,
+		aiManager:  aiManager,
+	}
+}
+
+// SetAIManager 设置AI管理器
+func (s *ChatService) SetAIManager(aiManager *AIManager) {
+	s.aiManager = aiManager
 }
 
 // CreateConversation 创建新对话
@@ -307,8 +326,12 @@ func (s *ChatService) GetDatabaseSize() (int64, error) {
 
 // GenerateAIResponse 生成AI回复
 func (s *ChatService) GenerateAIResponse(message, conversationID string) (string, error) {
-	// 这里可以集成外部AI服务
-	// 目前返回模拟回复
+	// 使用AI管理器生成回复
+	if s.aiManager != nil {
+		ctx := context.Background()
+		return s.aiManager.GenerateResponse(ctx, message, conversationID)
+	}
+	// 如果AI管理器未初始化，返回模拟回复
 	return s.getSimulatedAIResponse(message), nil
 }
 
