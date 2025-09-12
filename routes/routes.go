@@ -130,6 +130,7 @@ func SetupRoutes(
 			"api": "API 服務",
 			"redis": "Redis 快取系統",
 			"mongodb": "MongoDB 文檔資料庫",
+			"ai-chat": "AI 智能聊天系統",
 		}
 		
 		title, exists := titleMap[docType]
