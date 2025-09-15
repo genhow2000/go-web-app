@@ -55,7 +55,12 @@ jobs:
             --min-instances 0 \
             --set-env-vars "DB_PATH=/tmp/app.db" \
             --set-env-vars "MONGODB_URI=$MONGODB_URI" \
-            --set-env-vars "MONGODB_DATABASE=chatbot"
+            --set-env-vars "MONGODB_DATABASE=chatbot" \
+            --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --set-env-vars "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" \
+            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
+            --set-env-vars "AI_PRIMARY_PROVIDER=groq" \
+            --set-env-vars "AI_FALLBACK_PROVIDER=gemini"
 
       - name: Show Output
         run: |
