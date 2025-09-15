@@ -34,6 +34,22 @@ logs/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+.env.staging
+
+# API Keys and Secrets
+*.key
+*.secret
+*.pem
+*.p12
+*.pfx
+secrets/
+keys/
+
+# Configuration files with sensitive data
+config.local.json
+config.production.json
+config.staging.json
 
 # Docker
 .dockerignore
