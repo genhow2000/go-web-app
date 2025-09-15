@@ -179,6 +179,13 @@ func (c *UnifiedAuthController) ShowRegisterPage(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "register.html", gin.H{})
 }
 
+// 顯示商戶註冊頁面
+func (c *UnifiedAuthController) ShowMerchantRegisterPage(ctx *gin.Context) {
+	ctx.HTML(http.StatusOK, "merchant_register.html", gin.H{
+		"title": "商戶註冊 - 我要開店",
+	})
+}
+
 // 顯示客戶儀表板
 func (c *UnifiedAuthController) ShowCustomerDashboard(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "customer_dashboard.html", gin.H{

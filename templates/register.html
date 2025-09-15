@@ -181,10 +181,11 @@
                 <label for="role">註冊類型</label>
                 <select id="role" name="role" style="width: 100%; padding: 0.75rem; border: 2px solid #e1e5e9; border-radius: 5px; font-size: 1rem; background: white;">
                     <option value="customer">客戶</option>
+                    <option value="merchant">商戶（開店賣家）</option>
                     <option value="admin">管理員</option>
                 </select>
                 <small style="color: #666; font-size: 0.8rem; margin-top: 0.25rem; display: block;">
-                    注意：管理員註冊需要審核，建議先註冊為客戶
+                    商戶註冊需要審核，管理員註冊需要審核，建議先註冊為客戶
                 </small>
             </div>
             
@@ -199,7 +200,7 @@
         </div>
         
         <div class="login-link">
-            <p>已有帳戶？ <a href="/merchant/login">商戶登入</a> 或 <a href="/admin/login">管理員登入</a></p>
+            <p>已有帳戶？ <a href="/customer/login">客戶登入</a> | <a href="/merchant/login">商戶登入</a> | <a href="/admin/login">管理員登入</a></p>
         </div>
     </div>
 
@@ -253,9 +254,15 @@
                     successMessage.textContent = data.message || '註冊成功！';
                     successMessage.style.display = 'block';
                     
-                    // 重定向到登入頁面
+                    // 根據角色重定向到對應登入頁面
                     setTimeout(() => {
-                        window.location.href = '/merchant/login';
+                        if (role === 'merchant') {
+                            window.location.href = '/merchant/login';
+                        } else if (role === 'admin') {
+                            window.location.href = '/admin/login';
+                        } else {
+                            window.location.href = '/customer/login';
+                        }
                     }, 1500);
                 } else {
                     errorMessage.textContent = data.error || '註冊失敗，請稍後再試';

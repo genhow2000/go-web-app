@@ -195,7 +195,7 @@
             <div class="logo">🏪 商戶後台</div>
             <div class="user-info">
                 <span>歡迎，商戶用戶</span>
-                <a href="/logout" class="logout-btn">登出</a>
+                <button class="logout-btn" onclick="logout()">登出</button>
             </div>
         </div>
     </div>
@@ -264,6 +264,20 @@
     </div>
 
     <script>
+        // 登出功能
+        function logout() {
+            if (confirm('確定要登出嗎？')) {
+                fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                }).then(() => {
+                    window.location.href = '/';
+                });
+            }
+        }
+        
         // 這裡可以添加商戶後台的 JavaScript 功能
         console.log('商戶後台已載入');
     </script>

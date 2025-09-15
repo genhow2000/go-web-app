@@ -369,7 +369,7 @@ func SetupRoutes(
 	{
 		merchant.GET("/login", unifiedAuthController.ShowMerchantLogin)
 		merchant.POST("/login", unifiedAuthController.MerchantLogin)
-		merchant.GET("/register", unifiedAuthController.ShowRegisterPage)
+		merchant.GET("/register", unifiedAuthController.ShowMerchantRegisterPage)
 		merchant.POST("/register", unifiedAuthController.Register)
 	}
 
