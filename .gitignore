@@ -69,8 +69,16 @@ coverage.html
 tmp/
 temp/
 
-# Frontend (Vue.js/Node.js) - 整個資料夾忽略
-frontend/
+# Frontend (Vue.js/Node.js)
+frontend/node_modules/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/pnpm-lock.yaml
 
-# Static files (built by frontend)
-static/dist/
+# Note: frontend/dist/ and static/dist/ are needed for Docker build
+# They will be built during the Docker build process

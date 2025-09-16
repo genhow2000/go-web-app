@@ -216,9 +216,9 @@
         </div>
 
         <div class="content">
-            <a href="javascript:history.back()" class="back-btn">
+            <a href="#" id="back-btn" class="back-btn" onclick="handleBack()">
                 <i class="fas fa-arrow-left"></i>
-                返回上一頁
+                <span id="back-text">返回上一頁</span>
             </a>
 
             <div id="markdown-content" class="markdown-content">
@@ -260,8 +260,31 @@
             }
         }
 
+        // 智能返回功能
+        function handleBack() {
+            // 檢查是否有歷史記錄
+            if (window.history.length > 1) {
+                // 嘗試返回上一頁
+                window.history.back();
+            } else {
+                // 如果沒有歷史記錄，返回技術展示頁面
+                window.location.href = '/tech-showcase';
+            }
+        }
+
+        // 頁面載入時檢查並更新返回按鈕文字
+        function updateBackButton() {
+            const backText = document.getElementById('back-text');
+            if (window.history.length <= 1) {
+                backText.textContent = '返回技術展示';
+            } else {
+                backText.textContent = '返回上一頁';
+            }
+        }
+
         // 頁面載入時執行
         loadMarkdown();
+        updateBackButton();
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
