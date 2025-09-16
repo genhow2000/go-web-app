@@ -29,6 +29,12 @@ func SetupRoutes(
 
 	// 靜態文件
 	r.Static("/static", "./static")
+	
+	// Vue.js 前端靜態文件
+	r.Static("/assets", "./static/dist/assets")
+	
+	// Vue.js 其他靜態文件（如favicon.ico）
+	r.StaticFile("/favicon.ico", "./static/dist/favicon.ico")
 
 	// 中間件
 	r.Use(middleware.CORSMiddleware())
@@ -88,11 +94,42 @@ func SetupRoutes(
 	productRepo := models.NewProductRepository(database.DB)
 	mallController := controllers.NewMallController(productRepo)
 
-	// 商城首頁
-	r.GET("/", mallController.ShowHomepage)
-
-	// 技術展示頁面
-	r.GET("/tech-showcase", mallController.ShowTechShowcase)
+	// Vue.js 前端路由 - 提供所有頁面
+	r.GET("/", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	
+	// Vue.js SPA 路由 - 所有前端路由都返回 index.html
+	r.GET("/tech-showcase", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/customer/login", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/merchant/login", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/admin/login", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/customer/dashboard", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/merchant/dashboard", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/admin/dashboard", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/merchant/products", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/merchant/products/create", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
+	r.GET("/merchant/products/:id/edit", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
 
 	// 商城API路由
 	api := r.Group("/api")
@@ -106,15 +143,15 @@ func SetupRoutes(
 		api.GET("/products/:id", mallController.GetProduct)
 	}
 
-	// 商城頁面路由
-	{
-		// 商品詳情頁面
-		r.GET("/product/:id", mallController.ShowProductPage)
-		// 分類頁面
-		r.GET("/category/:category", mallController.ShowCategoryPage)
-		// 搜尋結果頁面
-		r.GET("/search", mallController.ShowSearchPage)
-	}
+	// 商城頁面路由（已移至Vue.js）
+	// {
+	//	// 商品詳情頁面
+	//	r.GET("/product/:id", mallController.ShowProductPage)
+	//	// 分類頁面
+	//	r.GET("/category/:category", mallController.ShowCategoryPage)
+	//	// 搜尋結果頁面
+	//	r.GET("/search", mallController.ShowSearchPage)
+	// }
 
 	// 通用文檔頁面
 	r.GET("/docs/:type", func(c *gin.Context) {
@@ -350,9 +387,11 @@ func SetupRoutes(
 	})
 
 	// 客戶登入和註冊路由
-	r.GET("/customer/login", unifiedAuthController.ShowCustomerLogin)
+	// 客戶登入頁面（已移至Vue.js）
+	// r.GET("/customer/login", unifiedAuthController.ShowCustomerLogin)
 	r.POST("/customer/login", unifiedAuthController.CustomerLogin)
-	r.GET("/customer/register", unifiedAuthController.ShowRegisterPage)
+	// 客戶註冊頁面（已移至Vue.js）
+	// r.GET("/customer/register", unifiedAuthController.ShowRegisterPage)
 	r.POST("/customer/register", unifiedAuthController.Register)
 
 	// 客戶受保護路由
@@ -360,16 +399,19 @@ func SetupRoutes(
 	customerProtected.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
 	customerProtected.Use(middleware.CustomerMiddleware())
 	{
-		customerProtected.GET("/dashboard", unifiedAuthController.ShowCustomerDashboard)
+		// 客戶儀表板（已移至Vue.js）
+		// customerProtected.GET("/dashboard", unifiedAuthController.ShowCustomerDashboard)
 		customerProtected.GET("/profile", unifiedAuthController.GetUserProfile)
 	}
 
 	// 商戶登入和註冊路由
 	merchant := r.Group("/merchant")
 	{
-		merchant.GET("/login", unifiedAuthController.ShowMerchantLogin)
+		// 商戶登入頁面（已移至Vue.js）
+		// merchant.GET("/login", unifiedAuthController.ShowMerchantLogin)
 		merchant.POST("/login", unifiedAuthController.MerchantLogin)
-		merchant.GET("/register", unifiedAuthController.ShowMerchantRegisterPage)
+		// 商戶註冊頁面（已移至Vue.js）
+		// merchant.GET("/register", unifiedAuthController.ShowMerchantRegisterPage)
 		merchant.POST("/register", unifiedAuthController.Register)
 	}
 
@@ -378,14 +420,16 @@ func SetupRoutes(
 	merchantProtected.Use(middleware.UnifiedAuthMiddleware(unifiedAuthService))
 	merchantProtected.Use(middleware.MerchantMiddleware())
 	{
-		merchantProtected.GET("/dashboard", unifiedAuthController.ShowMerchantDashboard)
+		// 商戶儀表板（已移至Vue.js）
+		// merchantProtected.GET("/dashboard", unifiedAuthController.ShowMerchantDashboard)
 		merchantProtected.GET("/profile", unifiedAuthController.GetUserProfile)
 	}
 
 	// 管理員登入和註冊路由
 	adminAuth := r.Group("/admin")
 	{
-		adminAuth.GET("/login", unifiedAuthController.ShowAdminLogin)
+		// 管理員登入頁面（已移至Vue.js）
+		// adminAuth.GET("/login", unifiedAuthController.ShowAdminLogin)
 		adminAuth.POST("/login", unifiedAuthController.AdminLogin)
 		adminAuth.GET("/register", unifiedAuthController.ShowRegisterPage)
 		adminAuth.POST("/register", unifiedAuthController.Register)
@@ -419,10 +463,12 @@ func SetupRoutes(
 	admin.Use(middleware.AdminMiddleware())
 	{
 		// 管理員頁面
-		admin.GET("/dashboard", adminController.ShowAdminDashboard)
-		admin.GET("/users", adminController.ShowUserManagement)
-		admin.GET("/users/create", adminController.ShowCreateUser)
-		admin.GET("/users/:id/edit", adminController.ShowEditUser)
+		// 管理員儀表板（已移至Vue.js）
+		// admin.GET("/dashboard", adminController.ShowAdminDashboard)
+		// 管理員用戶管理頁面（已移至Vue.js）
+		// admin.GET("/users", adminController.ShowUserManagement)
+		// admin.GET("/users/create", adminController.ShowCreateUser)
+		// admin.GET("/users/:id/edit", adminController.ShowEditUser)
 		admin.GET("/profile", unifiedAuthController.GetUserProfile)
 
 		// 管理員 API
@@ -446,7 +492,8 @@ func SetupRoutes(
 
 	// 資料庫管理登入/登出（不需要認證）
 	dbController := controllers.NewDBController()
-	r.GET("/admin/db/login", dbController.ShowDBLogin)
+	// 資料庫管理登入頁面（已移至Vue.js）
+	// r.GET("/admin/db/login", dbController.ShowDBLogin)
 	r.POST("/admin/db/login", dbController.DBLogin)
 	r.POST("/admin/db/logout", dbController.DBLogout)
 
@@ -455,7 +502,8 @@ func SetupRoutes(
 	db.Use(middleware.DBAuthMiddleware())
 	{
 		// 資料庫管理頁面
-		db.GET("/", dbController.ShowDBManager)
+		// 資料庫管理頁面（已移至Vue.js）
+		// db.GET("/", dbController.ShowDBManager)
 
 		// 資料庫管理 API
 		dbAPI := db.Group("/api")

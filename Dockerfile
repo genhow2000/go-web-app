@@ -16,12 +16,28 @@ COPY . .
 # 整理依賴並構建應用（使用SQLite驅動）
 RUN go mod tidy && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main .
 
-
 # 構建 migration 工具
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o migrate cmd/migrate/main.go
 
 # 構建 seeder 工具
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o seed cmd/seed/main.go
+
+# Vue.js 前端構建階段
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# 複製前端依賴文件
+COPY frontend/package*.json ./
+
+# 安裝前端依賴
+RUN npm install
+
+# 複製前端源代碼
+COPY frontend/ .
+
+# 構建前端應用
+RUN npm run build
 
 # 使用輕量級的 alpine 映像作為運行階段
 FROM alpine:latest
@@ -42,6 +58,9 @@ COPY --from=builder /app/seed .
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/md ./md
 COPY --from=builder /app/migrations ./migrations
+
+# 從前端構建階段複製構建文件
+COPY --from=frontend-builder /app/frontend/dist ./static/dist
 
 # 暴露端口
 EXPOSE 8080

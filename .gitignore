@@ -68,3 +68,9 @@ coverage.html
 # Temporary files
 tmp/
 temp/
+
+# Frontend (Vue.js/Node.js) - 整個資料夾忽略
+frontend/
+
+# Static files (built by frontend)
+static/dist/
