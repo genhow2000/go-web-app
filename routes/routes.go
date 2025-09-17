@@ -130,6 +130,9 @@ func SetupRoutes(
 	r.GET("/merchant/products/:id/edit", func(c *gin.Context) {
 		c.File("./static/dist/index.html")
 	})
+	r.GET("/register", func(c *gin.Context) {
+		c.File("./static/dist/index.html")
+	})
 
 	// 商城API路由
 	api := r.Group("/api")

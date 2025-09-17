@@ -124,6 +124,11 @@
       <span v-if="hasNewMessage" class="notification-badge">1</span>
     </button>
 
+    <!-- 技術展示按鈕 -->
+    <button class="tech-showcase-btn" @click="goToTechShowcase" title="技術展示">
+      🚀
+    </button>
+
     <!-- AI 聊天窗口 -->
     <AIChatWindow 
       v-if="showChatWindow"
@@ -241,6 +246,11 @@ export default {
       }
     }
 
+    // 前往技術展示頁面
+    const goToTechShowcase = () => {
+      router.push('/tech-showcase')
+    }
+
     // 組件掛載時載入數據
     onMounted(() => {
       loadCategories()
@@ -261,7 +271,8 @@ export default {
       viewProduct,
       addToCart,
       toggleFavorite,
-      toggleChatWindow
+      toggleChatWindow,
+      goToTechShowcase
     }
   }
 }

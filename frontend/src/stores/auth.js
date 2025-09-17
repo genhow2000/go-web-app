@@ -15,15 +15,23 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // 根據角色選擇正確的登入端點
       const loginEndpoint = `/${role}/login`
+      console.log('發送登入請求到:', loginEndpoint, credentials)
+      
       const response = await api.post(loginEndpoint, credentials)
+      console.log('API響應:', response.data)
+      
       const { token: newToken, user: userData } = response.data
       
       token.value = newToken
       user.value = userData
       localStorage.setItem('authToken', newToken)
       
+      console.log('認證狀態已更新:', { token: !!newToken, user: !!userData })
+      
       return { success: true, data: response.data }
     } catch (error) {
+      console.error('登入API錯誤:', error)
+      console.error('錯誤詳情:', error.response?.data)
       return { 
         success: false, 
         error: error.response?.data?.error || '登入失敗' 

@@ -85,20 +85,28 @@ export default {
       loading.value = true
 
       try {
+        console.log('開始登入流程...', { email: form.email, role: 'customer' })
+        
         const result = await authStore.login({
           email: form.email,
           password: form.password
         }, 'customer')
 
+        console.log('登入結果:', result)
+
         if (result.success) {
           successMessage.value = result.data.message || '登入成功！'
+          console.log('登入成功，準備跳轉到儀表板...')
           setTimeout(() => {
+            console.log('執行路由跳轉...')
             router.push('/customer/dashboard')
           }, 1000)
         } else {
+          console.error('登入失敗:', result.error)
           errorMessage.value = result.error || '登入失敗，請重試'
         }
       } catch (error) {
+        console.error('登入過程發生錯誤:', error)
         errorMessage.value = '網路錯誤，請重試'
       } finally {
         loading.value = false

@@ -13,13 +13,13 @@
       
       <div class="nav-actions">
         <div v-if="!isAuthenticated" class="login-dropdown">
-          <a href="#" class="btn btn-outline">登入/註冊</a>
-          <div class="dropdown-menu">
-            <router-link to="/customer/login">客戶登入</router-link>
-            <router-link to="/merchant/login">商戶登入</router-link>
-            <router-link to="/admin/login">管理員登入</router-link>
+          <button class="btn btn-outline" @click="toggleDropdown">登入/註冊</button>
+          <div v-show="showDropdown" class="dropdown-menu">
+            <router-link to="/customer/login" @click="closeDropdown">客戶登入</router-link>
+            <router-link to="/merchant/login" @click="closeDropdown">商戶登入</router-link>
+            <router-link to="/admin/login" @click="closeDropdown">管理員登入</router-link>
             <hr style="margin: 8px 0; border: none; border-top: 1px solid #e2e8f0;">
-            <router-link to="/register">註冊帳號</router-link>
+            <router-link to="/register" @click="closeDropdown">註冊帳號</router-link>
           </div>
         </div>
         
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
@@ -44,20 +44,49 @@ export default {
   setup() {
     const authStore = useAuthStore()
     const router = useRouter()
+    const showDropdown = ref(false)
     
     const isAuthenticated = computed(() => authStore.isAuthenticated)
     const user = computed(() => authStore.user)
     
+    const toggleDropdown = () => {
+      showDropdown.value = !showDropdown.value
+    }
+    
+    const closeDropdown = () => {
+      showDropdown.value = false
+    }
+    
     const handleLogout = async () => {
       if (confirm('確定要登出嗎？')) {
         await authStore.logout()
+        showDropdown.value = false
         router.push('/')
       }
     }
     
+    // 點擊外部關閉下拉菜單
+    const handleClickOutside = (event) => {
+      const dropdown = event.target.closest('.login-dropdown')
+      if (!dropdown && showDropdown.value) {
+        showDropdown.value = false
+      }
+    }
+    
+    onMounted(() => {
+      document.addEventListener('click', handleClickOutside)
+    })
+    
+    onUnmounted(() => {
+      document.removeEventListener('click', handleClickOutside)
+    })
+    
     return {
       isAuthenticated,
       user,
+      showDropdown,
+      toggleDropdown,
+      closeDropdown,
       handleLogout
     }
   }
@@ -151,7 +180,6 @@ export default {
 }
 
 .dropdown-menu {
-  display: none;
   position: absolute;
   top: 100%;
   left: 0;
@@ -175,10 +203,6 @@ export default {
 
 .dropdown-menu a:hover {
   background-color: #f1f1f1;
-}
-
-.login-dropdown:hover .dropdown-menu {
-  display: block;
 }
 
 .user-menu {

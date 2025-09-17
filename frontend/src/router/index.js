@@ -5,8 +5,10 @@ import { useAuthStore } from '@/stores/auth'
 import HomePage from '@/views/HomePage.vue'
 import TechShowcase from '@/views/TechShowcase.vue'
 import CustomerLogin from '@/views/auth/CustomerLogin.vue'
+import CustomerRegister from '@/views/auth/CustomerRegister.vue'
 import MerchantLogin from '@/views/auth/MerchantLogin.vue'
 import AdminLogin from '@/views/auth/AdminLogin.vue'
+import MerchantRegister from '@/views/auth/MerchantRegister.vue'
 import CustomerDashboard from '@/views/dashboard/CustomerDashboard.vue'
 import MerchantDashboard from '@/views/dashboard/MerchantDashboard.vue'
 import AdminDashboard from '@/views/dashboard/AdminDashboard.vue'
@@ -40,6 +42,17 @@ const routes = [
     path: '/admin/login',
     name: 'AdminLogin',
     component: AdminLogin
+  },
+  // 註冊頁面
+  {
+    path: '/register',
+    name: 'CustomerRegister',
+    component: CustomerRegister
+  },
+  {
+    path: '/merchant/register',
+    name: 'MerchantRegister',
+    component: MerchantRegister
   },
   // 受保護的儀表板頁面
   {
