@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"go-simple-app/models"
 	"go-simple-app/services"
 
 	"github.com/gin-gonic/gin"
@@ -98,9 +99,32 @@ func (c *UnifiedAuthController) MerchantLogin(ctx *gin.Context) {
 		return
 	}
 	
+	// 創建包含role字段的用戶響應
+	userResponse := gin.H{
+		"id":             response.User.GetID(),
+		"name":           response.User.GetName(),
+		"email":          response.User.GetEmail(),
+		"role":           response.User.GetRole(),
+		"is_active":      response.User.GetIsActive(),
+		"last_login":     response.User.GetLastLogin(),
+		"login_count":    response.User.GetLoginCount(),
+		"created_at":     response.User.GetCreatedAt(),
+		"updated_at":     response.User.GetUpdatedAt(),
+	}
+	
+	// 如果是商戶，添加商戶特有字段
+	if merchant, ok := response.User.(*models.Merchant); ok {
+		userResponse["business_name"] = merchant.BusinessName
+		userResponse["business_license"] = merchant.BusinessLicense
+		userResponse["phone"] = merchant.Phone
+		userResponse["business_type"] = merchant.BusinessType
+		userResponse["is_verified"] = merchant.IsVerified
+		userResponse["business_data"] = merchant.BusinessData
+	}
+	
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "商戶登入成功",
-		"user":    response.User,
+		"user":    userResponse,
 		"token":   response.Token,
 	})
 }

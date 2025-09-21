@@ -1,7 +1,16 @@
 <template>
   <div class="product-card" @click="$emit('view', product.id)">
-    <div class="product-image-placeholder">
-      <div class="product-icon">📦</div>
+    <div class="product-image-container">
+      <img 
+        v-if="product.image_url" 
+        :src="product.image_url" 
+        :alt="product.name"
+        class="product-image"
+        @error="handleImageError"
+      >
+      <div v-else class="product-image-placeholder">
+        <div class="product-icon">📦</div>
+      </div>
     </div>
     <div class="product-info">
       <h3 class="product-name">{{ product.name }}</h3>
@@ -43,7 +52,17 @@ export default {
       required: true
     }
   },
-  emits: ['view', 'add-to-cart', 'toggle-favorite']
+  emits: ['view', 'add-to-cart', 'toggle-favorite'],
+  methods: {
+    handleImageError(event) {
+      // 當圖片載入失敗時，隱藏圖片並顯示佔位符
+      event.target.style.display = 'none'
+      const placeholder = event.target.nextElementSibling
+      if (placeholder) {
+        placeholder.style.display = 'flex'
+      }
+    }
+  }
 }
 </script>
 
@@ -62,14 +81,35 @@ export default {
   box-shadow: 0 15px 30px rgba(0,0,0,0.15);
 }
 
-.product-image-placeholder {
+.product-image-container {
   width: 100%;
   height: 200px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}
+
+.product-image-placeholder {
+  width: 100%;
+  height: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px 8px 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .product-icon {

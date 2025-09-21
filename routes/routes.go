@@ -27,14 +27,18 @@ func SetupRoutes(
 	// 載入 HTML 模板
 	r.LoadHTMLGlob("templates/*")
 
-	// 靜態文件
-	r.Static("/static", "./static")
+	// 靜態文件 - 使用環境變量或默認路徑
+	staticPath := os.Getenv("STATIC_PATH")
+	if staticPath == "" {
+		staticPath = "/root/static"
+	}
 	
-	// Vue.js 前端靜態文件
-	r.Static("/assets", "./static/dist/assets")
+	r.Static("/static", staticPath)
+	r.Static("/assets", staticPath+"/dist/assets")
+	r.StaticFile("/favicon.ico", staticPath+"/dist/favicon.ico")
 	
-	// Vue.js 其他靜態文件（如favicon.ico）
-	r.StaticFile("/favicon.ico", "./static/dist/favicon.ico")
+	// 圖片服務
+	r.Static("/images", "./static/images")
 
 	// 中間件
 	r.Use(middleware.CORSMiddleware())
@@ -93,45 +97,48 @@ func SetupRoutes(
 	// 初始化商城控制器
 	productRepo := models.NewProductRepository(database.DB)
 	mallController := controllers.NewMallController(productRepo)
+	merchantProductController := controllers.NewMerchantProductController(productRepo)
+	imageController := controllers.NewImageController()
+	imageProxyController := controllers.NewImageProxyController()
 
 	// Vue.js 前端路由 - 提供所有頁面
 	r.GET("/", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	
 	// Vue.js SPA 路由 - 所有前端路由都返回 index.html
 	r.GET("/tech-showcase", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/customer/login", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/merchant/login", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/admin/login", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/customer/dashboard", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/merchant/dashboard", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/admin/dashboard", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/merchant/products", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/merchant/products/create", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/merchant/products/:id/edit", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 	r.GET("/register", func(c *gin.Context) {
-		c.File("./static/dist/index.html")
+		c.File(staticPath + "/dist/index.html")
 	})
 
 	// 商城API路由
@@ -144,6 +151,12 @@ func SetupRoutes(
 		api.GET("/products/category/:category", mallController.GetProductsByCategory)
 		api.GET("/products/search", mallController.SearchProducts)
 		api.GET("/products/:id", mallController.GetProduct)
+		
+		// 圖片相關API
+		api.GET("/image/product", imageController.GenerateProductImage)
+		api.GET("/image/placeholder", imageController.GeneratePlaceholderImage)
+		api.GET("/image/proxy", imageProxyController.ProxyImage)
+		api.GET("/image/external", imageProxyController.GenerateExternalImage)
 	}
 
 	// 商城頁面路由（已移至Vue.js）
@@ -426,6 +439,18 @@ func SetupRoutes(
 		// 商戶儀表板（已移至Vue.js）
 		// merchantProtected.GET("/dashboard", unifiedAuthController.ShowMerchantDashboard)
 		merchantProtected.GET("/profile", unifiedAuthController.GetUserProfile)
+		
+		// 商戶商品管理API
+		merchantAPI := merchantProtected.Group("/api")
+		{
+			merchantAPI.GET("/products", merchantProductController.GetMerchantProducts)
+			merchantAPI.GET("/products/stats", merchantProductController.GetMerchantProductStats)
+			merchantAPI.POST("/products", merchantProductController.CreateMerchantProduct)
+			merchantAPI.GET("/products/:id", merchantProductController.GetMerchantProduct)
+			merchantAPI.PUT("/products/:id", merchantProductController.UpdateMerchantProduct)
+			merchantAPI.PUT("/products/:id/toggle-status", merchantProductController.ToggleMerchantProductStatus)
+			merchantAPI.DELETE("/products/:id", merchantProductController.DeleteMerchantProduct)
+		}
 	}
 
 	// 管理員登入和註冊路由

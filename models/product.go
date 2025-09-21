@@ -296,3 +296,119 @@ func (r *ProductRepository) IncrementSalesCount(id int, quantity int) error {
 	_, err := r.db.Exec(query, quantity, quantity, id)
 	return err
 }
+
+// GetByMerchantID 根據商戶ID獲取商品列表
+func (r *ProductRepository) GetByMerchantID(merchantID, limit, offset int, status, search string) ([]*Product, error) {
+	query := `SELECT id, name, description, price, original_price, category, sub_category, 
+	          brand, sku, stock, image_url, images, tags, is_active, is_featured, is_on_sale, 
+	          merchant_id, view_count, sales_count, rating, review_count, weight, dimensions, 
+	          created_at, updated_at FROM products WHERE merchant_id = ?`
+	
+	args := []interface{}{merchantID}
+	
+	// 添加狀態篩選
+	if status != "" {
+		if status == "active" {
+			query += " AND is_active = 1"
+		} else if status == "inactive" {
+			query += " AND is_active = 0"
+		}
+	}
+	
+	// 添加搜尋條件
+	if search != "" {
+		query += " AND (name LIKE ? OR description LIKE ? OR category LIKE ?)"
+		searchTerm := "%" + search + "%"
+		args = append(args, searchTerm, searchTerm, searchTerm)
+	}
+	
+	query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+	args = append(args, limit, offset)
+	
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var products []*Product
+	for rows.Next() {
+		product := &Product{}
+		err := rows.Scan(
+			&product.ID, &product.Name, &product.Description, &product.Price, &product.OriginalPrice,
+			&product.Category, &product.SubCategory, &product.Brand, &product.SKU, &product.Stock,
+			&product.ImageURL, &product.Images, &product.Tags, &product.IsActive, &product.IsFeatured,
+			&product.IsOnSale, &product.MerchantID, &product.ViewCount, &product.SalesCount,
+			&product.Rating, &product.ReviewCount, &product.Weight, &product.Dimensions,
+			&product.CreatedAt, &product.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+	
+	return products, nil
+}
+
+// GetMerchantStats 獲取商戶商品統計
+func (r *ProductRepository) GetMerchantStats(merchantID int) (map[string]interface{}, error) {
+	stats := make(map[string]interface{})
+	
+	// 總商品數
+	var total int
+	err := r.db.QueryRow("SELECT COUNT(*) FROM products WHERE merchant_id = ?", merchantID).Scan(&total)
+	if err != nil {
+		return nil, err
+	}
+	stats["total"] = total
+	
+	// 上架商品數
+	var active int
+	err = r.db.QueryRow("SELECT COUNT(*) FROM products WHERE merchant_id = ? AND is_active = 1", merchantID).Scan(&active)
+	if err != nil {
+		return nil, err
+	}
+	stats["active"] = active
+	
+	// 下架商品數
+	var inactive int
+	err = r.db.QueryRow("SELECT COUNT(*) FROM products WHERE merchant_id = ? AND is_active = 0", merchantID).Scan(&inactive)
+	if err != nil {
+		return nil, err
+	}
+	stats["inactive"] = inactive
+	
+	// 精選商品數
+	var featured int
+	err = r.db.QueryRow("SELECT COUNT(*) FROM products WHERE merchant_id = ? AND is_featured = 1", merchantID).Scan(&featured)
+	if err != nil {
+		return nil, err
+	}
+	stats["featured"] = featured
+	
+	// 特價商品數
+	var onSale int
+	err = r.db.QueryRow("SELECT COUNT(*) FROM products WHERE merchant_id = ? AND is_on_sale = 1", merchantID).Scan(&onSale)
+	if err != nil {
+		return nil, err
+	}
+	stats["on_sale"] = onSale
+	
+	// 總瀏覽次數
+	var totalViews int
+	err = r.db.QueryRow("SELECT COALESCE(SUM(view_count), 0) FROM products WHERE merchant_id = ?", merchantID).Scan(&totalViews)
+	if err != nil {
+		return nil, err
+	}
+	stats["total_views"] = totalViews
+	
+	// 總銷售次數
+	var totalSales int
+	err = r.db.QueryRow("SELECT COALESCE(SUM(sales_count), 0) FROM products WHERE merchant_id = ?", merchantID).Scan(&totalSales)
+	if err != nil {
+		return nil, err
+	}
+	stats["total_sales"] = totalSales
+	
+	return stats, nil
+}

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Go 應用程式
   go-app:
-    image: go-vue-app
+    build: .
     ports:
       - "8080:8080"
     environment:
@@ -20,6 +20,8 @@ services:
       - ./logs:/app/logs  # 映射日誌目錄到本地
     restart: unless-stopped
     container_name: go-simple-app
+    networks:
+      - default
 
 volumes:
   app_data:
