@@ -82,3 +82,6 @@ frontend/pnpm-lock.yaml
 
 # Note: frontend/dist/ and static/dist/ are needed for Docker build
 # They will be built during the Docker build process
+
+# Documentation files in md/docs directory
+md/docs/
