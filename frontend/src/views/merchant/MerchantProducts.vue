@@ -73,7 +73,14 @@
         <div v-else class="products-grid">
           <div v-for="product in products" :key="product.id" class="product-card">
             <div class="product-image">
-              <div class="image-placeholder">📦</div>
+              <img 
+                v-if="product.image_url" 
+                :src="product.image_url" 
+                :alt="product.name"
+                class="product-img"
+                @error="handleImageError"
+              >
+              <div v-else class="image-placeholder">📦</div>
             </div>
             <div class="product-info">
               <h3 class="product-name">{{ product.name }}</h3>
@@ -199,6 +206,15 @@ export default {
       }
     }
 
+    const handleImageError = (event) => {
+      // 當圖片載入失敗時，隱藏圖片並顯示佔位符
+      event.target.style.display = 'none'
+      const placeholder = event.target.nextElementSibling
+      if (placeholder) {
+        placeholder.style.display = 'flex'
+      }
+    }
+
     const deleteProduct = async (productId) => {
       if (confirm('確定要刪除這個商品嗎？此操作無法復原。')) {
         try {
@@ -225,6 +241,7 @@ export default {
       loadProducts,
       searchProducts,
       toggleProductStatus,
+      handleImageError,
       deleteProduct
     }
   }
@@ -390,6 +407,13 @@ export default {
 .image-placeholder {
   font-size: 3rem;
   color: #a0aec0;
+}
+
+.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .product-name {

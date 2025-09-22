@@ -43,6 +43,12 @@ func (sm *SeederManager) RunAll() error {
 		return err
 	}
 
+	// 更新商品圖片 seeder
+	updateImagesSeeder := NewUpdateProductImagesSeeder(sm.db)
+	if err := updateImagesSeeder.Run(); err != nil {
+		return err
+	}
+
 	log.Println("所有 seeder 執行完成!")
 	return nil
 }
@@ -94,6 +100,9 @@ func (sm *SeederManager) RunSpecific(seederName string) error {
 	case "product":
 		productSeeder := NewProductSeeder(sm.db)
 		return productSeeder.Run()
+	case "update_images":
+		updateImagesSeeder := NewUpdateProductImagesSeeder(sm.db)
+		return updateImagesSeeder.Run()
 	default:
 		log.Printf("未知的 seeder: %s", seederName)
 		return nil

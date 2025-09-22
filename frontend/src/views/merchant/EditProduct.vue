@@ -113,6 +113,20 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="image_url">商品圖片網址</label>
+            <input 
+              v-model="form.image_url"
+              type="url" 
+              id="image_url" 
+              placeholder="請輸入圖片網址 (例如: https://example.com/image.jpg)"
+            >
+            <div v-if="form.image_url" class="image-preview">
+              <img :src="form.image_url" :alt="form.name || '商品圖片'" @error="handleImageError">
+              <p class="image-preview-text">圖片預覽</p>
+            </div>
+          </div>
+
           <div class="form-checkboxes">
             <label class="checkbox-label">
               <input 
@@ -180,6 +194,7 @@ export default {
       category: '',
       stock: 0,
       sku: '',
+      image_url: '',
       is_featured: false,
       is_on_sale: false,
       is_active: true
@@ -202,6 +217,7 @@ export default {
             category: product.value.category || '',
             stock: product.value.stock || 0,
             sku: product.value.sku || '',
+            image_url: product.value.image_url || '',
             is_featured: product.value.is_featured || false,
             is_on_sale: product.value.is_on_sale || false,
             is_active: product.value.is_active !== false
@@ -226,6 +242,16 @@ export default {
         Object.assign(form, product.value)
       } finally {
         loading.value = false
+      }
+    }
+
+    const handleImageError = (event) => {
+      // 當圖片載入失敗時，顯示錯誤信息
+      const preview = event.target.parentElement
+      const text = preview.querySelector('.image-preview-text')
+      if (text) {
+        text.textContent = '圖片載入失敗，請檢查網址是否正確'
+        text.style.color = '#e53e3e'
       }
     }
 
@@ -259,6 +285,7 @@ export default {
       product,
       form,
       loadProduct,
+      handleImageError,
       handleSubmit
     }
   }
@@ -381,6 +408,29 @@ export default {
 .form-group textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.image-preview {
+  margin-top: 15px;
+  text-align: center;
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  background: #f8f9fa;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.image-preview-text {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #718096;
+  font-weight: 500;
 }
 
 .form-checkboxes {
