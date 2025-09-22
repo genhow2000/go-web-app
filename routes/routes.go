@@ -100,6 +100,9 @@ func SetupRoutes(
 	merchantProductController := controllers.NewMerchantProductController(productRepo)
 	imageController := controllers.NewImageController()
 	imageProxyController := controllers.NewImageProxyController()
+	
+	// 初始化購物車服務和控制器
+	cartService := services.NewCartService(database.DB)
 
 	// Vue.js 前端路由 - 提供所有頁面
 	r.GET("/", func(c *gin.Context) {
@@ -140,6 +143,15 @@ func SetupRoutes(
 	r.GET("/register", func(c *gin.Context) {
 		c.File(staticPath + "/dist/index.html")
 	})
+	r.GET("/cart", func(c *gin.Context) {
+		c.File(staticPath + "/dist/index.html")
+	})
+	r.GET("/category/:category", func(c *gin.Context) {
+		c.File(staticPath + "/dist/index.html")
+	})
+	r.GET("/product/:id", func(c *gin.Context) {
+		c.File(staticPath + "/dist/index.html")
+	})
 
 	// 商城API路由
 	api := r.Group("/api")
@@ -158,6 +170,9 @@ func SetupRoutes(
 		api.GET("/image/proxy", imageProxyController.ProxyImage)
 		api.GET("/image/external", imageProxyController.GenerateExternalImage)
 	}
+
+	// 設置購物車路由
+	SetupCartRoutes(r, cartService, unifiedAuthService)
 
 	// 商城頁面路由（已移至Vue.js）
 	// {

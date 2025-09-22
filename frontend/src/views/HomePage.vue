@@ -79,7 +79,6 @@
             :key="product.id"
             :product="product"
             @view="viewProduct"
-            @add-to-cart="addToCart"
             @toggle-favorite="toggleFavorite"
           />
         </div>
@@ -226,11 +225,6 @@ export default {
       router.push(`/product/${productId}`)
     }
 
-    // 加入購物車
-    const addToCart = (productId) => {
-      // TODO: 實現加入購物車邏輯
-      alert('商品已加入購物車！')
-    }
 
     // 切換收藏
     const toggleFavorite = (productId) => {
@@ -269,7 +263,6 @@ export default {
       searchProducts,
       filterByCategory,
       viewProduct,
-      addToCart,
       toggleFavorite,
       toggleChatWindow,
       goToTechShowcase

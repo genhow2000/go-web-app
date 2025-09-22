@@ -17,6 +17,7 @@ import CreateProduct from '@/views/merchant/CreateProduct.vue'
 import EditProduct from '@/views/merchant/EditProduct.vue'
 import CategoryPage from '@/views/CategoryPage.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
+import CartPage from '@/views/CartPage.vue'
 
 const routes = [
   {
@@ -38,6 +39,12 @@ const routes = [
     path: '/product/:id',
     name: 'ProductDetail',
     component: ProductDetail
+  },
+  {
+    path: '/cart',
+    name: 'CartPage',
+    component: CartPage,
+    meta: { requiresAuth: true, role: 'customer' }
   },
   // 登入頁面
   {

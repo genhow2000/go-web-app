@@ -139,14 +139,13 @@
             </div>
 
             <div class="action-buttons">
-              <button 
-                @click="addToCart" 
-                :disabled="!product.is_active || product.stock <= 0"
-                class="btn btn-primary btn-large"
-              >
-                <span class="btn-icon">🛒</span>
-                {{ product.stock <= 0 ? '缺貨中' : '加入購物車' }}
-              </button>
+              <AddToCartButton 
+                :product="product"
+                :show-quantity-selector="false"
+                variant="primary"
+                @added-to-cart="handleAddedToCart"
+                @error="handleCartError"
+              />
               
               <button 
                 @click="toggleFavorite" 
@@ -206,6 +205,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Header from '@/components/common/Header.vue'
 import Footer from '@/components/common/Footer.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
+import AddToCartButton from '@/components/cart/AddToCartButton.vue'
 import api from '@/services/api'
 
 export default {
@@ -213,7 +213,8 @@ export default {
   components: {
     Header,
     Footer,
-    ProductCard
+    ProductCard,
+    AddToCartButton
   },
   setup() {
     const route = useRoute()
@@ -283,7 +284,7 @@ export default {
       }
     }
 
-    // 加入購物車
+    // 加入購物車（保留原有方法以備用）
     const addToCart = () => {
       if (!product.value.is_active || product.value.stock <= 0) {
         alert('商品無法購買')
@@ -292,6 +293,17 @@ export default {
       
       // TODO: 實現加入購物車邏輯
       alert(`已將 ${quantity.value} 件「${product.value.name}」加入購物車！`)
+    }
+
+    // 處理購物車按鈕事件
+    const handleAddedToCart = (data) => {
+      console.log('商品已加入購物車:', data)
+      // 可以在這裡添加成功提示
+    }
+
+    const handleCartError = (error) => {
+      console.error('購物車錯誤:', error)
+      // 可以在這裡添加錯誤提示
     }
 
     // 切換收藏
@@ -321,6 +333,8 @@ export default {
       increaseQuantity,
       decreaseQuantity,
       addToCart,
+      handleAddedToCart,
+      handleCartError,
       toggleFavorite,
       viewProduct
     }

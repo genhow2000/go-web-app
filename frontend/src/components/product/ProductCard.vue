@@ -27,10 +27,10 @@
       </div>
       <div class="product-actions">
         <button 
-          class="btn-add-cart" 
-          @click.stop="$emit('add-to-cart', product.id)"
+          class="btn btn-primary" 
+          @click.stop="$emit('view', product.id)"
         >
-          加入購物車
+          查看詳情
         </button>
         <button 
           class="btn-favorite" 
@@ -52,7 +52,7 @@ export default {
       required: true
     }
   },
-  emits: ['view', 'add-to-cart', 'toggle-favorite'],
+  emits: ['view', 'toggle-favorite'],
   methods: {
     handleImageError(event) {
       // 當圖片載入失敗時，隱藏圖片並顯示佔位符

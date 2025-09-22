@@ -12,6 +12,13 @@
       </ul>
       
       <div class="nav-actions">
+        <!-- 購物車圖標 -->
+        <CartIcon 
+          v-if="isAuthenticated && user?.role === 'customer'"
+          @mouseenter="handleMouseEnter"
+          @mouseleave="handleMouseLeave"
+        />
+        
         <div v-if="!isAuthenticated" class="login-dropdown">
           <button class="btn btn-outline" @click="toggleDropdown">登入/註冊</button>
           <div v-show="showDropdown" class="dropdown-menu">
@@ -38,9 +45,13 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
+import CartIcon from '@/components/cart/CartIcon.vue'
 
 export default {
   name: 'Header',
+  components: {
+    CartIcon
+  },
   setup() {
     const authStore = useAuthStore()
     const router = useRouter()
@@ -55,6 +66,15 @@ export default {
     
     const closeDropdown = () => {
       showDropdown.value = false
+    }
+
+    // 購物車圖標事件處理
+    const handleMouseEnter = () => {
+      // 購物車圖標的懸停事件
+    }
+
+    const handleMouseLeave = () => {
+      // 購物車圖標的離開事件
     }
     
     const handleLogout = async () => {
@@ -87,6 +107,8 @@ export default {
       showDropdown,
       toggleDropdown,
       closeDropdown,
+      handleMouseEnter,
+      handleMouseLeave,
       handleLogout
     }
   }
