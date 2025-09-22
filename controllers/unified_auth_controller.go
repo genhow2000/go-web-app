@@ -55,9 +55,32 @@ func (c *UnifiedAuthController) CustomerLogin(ctx *gin.Context) {
 		return
 	}
 	
+	// 創建包含role字段的用戶響應
+	userResponse := gin.H{
+		"id":             response.User.GetID(),
+		"name":           response.User.GetName(),
+		"email":          response.User.GetEmail(),
+		"role":           response.User.GetRole(),
+		"is_active":      response.User.GetIsActive(),
+		"last_login":     response.User.GetLastLogin(),
+		"login_count":    response.User.GetLoginCount(),
+		"created_at":     response.User.GetCreatedAt(),
+		"updated_at":     response.User.GetUpdatedAt(),
+	}
+	
+	// 如果是客戶，添加客戶特有字段
+	if customer, ok := response.User.(*models.Customer); ok {
+		userResponse["phone"] = customer.Phone
+		userResponse["address"] = customer.Address
+		userResponse["birth_date"] = customer.BirthDate
+		userResponse["gender"] = customer.Gender
+		userResponse["email_verified"] = customer.EmailVerified
+		userResponse["profile_data"] = customer.ProfileData
+	}
+	
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "客戶登入成功",
-		"user":    response.User,
+		"user":    userResponse,
 		"token":   response.Token,
 	})
 }

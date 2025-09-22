@@ -9,6 +9,21 @@
       
       <div class="role-badge">商戶專用</div>
       
+      <!-- Demo 帳密提示 -->
+      <div class="demo-credentials">
+        <h4>🎯 Demo 測試帳號</h4>
+        <div class="credential-item">
+          <span class="label">電子郵件：</span>
+          <code class="credential-value">merchant@example.com</code>
+          <button @click="fillDemoCredentials" class="fill-btn">填入</button>
+        </div>
+        <div class="credential-item">
+          <span class="label">密碼：</span>
+          <code class="credential-value">111111</code>
+          <button @click="fillDemoCredentials" class="fill-btn">填入</button>
+        </div>
+      </div>
+      
       <div v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
@@ -93,11 +108,17 @@ export default {
       }
     }
 
+    const fillDemoCredentials = () => {
+      form.email = 'merchant@example.com'
+      form.password = '111111'
+    }
+
     return {
       form,
       errorMessage,
       loading,
-      handleLogin
+      handleLogin,
+      fillDemoCredentials
     }
   }
 }
@@ -246,6 +267,63 @@ export default {
 
 .links a:hover {
   text-decoration: underline;
+}
+
+.demo-credentials {
+  background: #f8f9ff;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.demo-credentials h4 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.credential-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.credential-item:last-child {
+  margin-bottom: 0;
+}
+
+.credential-item .label {
+  font-size: 0.85rem;
+  color: #666;
+  min-width: 60px;
+}
+
+.credential-value {
+  background: #e1e5e9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #333;
+  flex: 1;
+}
+
+.fill-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.fill-btn:hover {
+  background: #5a67d8;
 }
 
 @media (max-width: 480px) {
