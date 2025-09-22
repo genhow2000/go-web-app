@@ -15,6 +15,8 @@ import AdminDashboard from '@/views/dashboard/AdminDashboard.vue'
 import MerchantProducts from '@/views/merchant/MerchantProducts.vue'
 import CreateProduct from '@/views/merchant/CreateProduct.vue'
 import EditProduct from '@/views/merchant/EditProduct.vue'
+import CategoryPage from '@/views/CategoryPage.vue'
+import ProductDetail from '@/views/ProductDetail.vue'
 
 const routes = [
   {
@@ -26,6 +28,16 @@ const routes = [
     path: '/tech-showcase',
     name: 'TechShowcase',
     component: TechShowcase
+  },
+  {
+    path: '/category/:category',
+    name: 'CategoryPage',
+    component: CategoryPage
+  },
+  {
+    path: '/product/:id',
+    name: 'ProductDetail',
+    component: ProductDetail
   },
   // 登入頁面
   {
