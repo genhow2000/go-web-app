@@ -1,0 +1,8 @@
+name: go-app-auto-deploy
+description: 自動部署 Go Web App
+github:
+  owner: genhow2000
+  name: go-web-app
+  push:
+    branch: ^main$
+filename: cloudbuild.yaml
