@@ -115,12 +115,7 @@ func SetupRoutes(
 
 	// Vue.js 前端路由 - 提供所有頁面
 	r.GET("/", func(c *gin.Context) {
-		filePath := staticPath + "/dist/index.html"
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Frontend not found"})
-			return
-		}
-		c.File(filePath)
+		c.File(staticPath + "/dist/index.html")
 	})
 	
 	// Vue.js SPA 路由 - 所有前端路由都返回 index.html
