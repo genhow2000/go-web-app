@@ -3,6 +3,7 @@ package controllers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"os"
 	"sync"
@@ -51,7 +52,7 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	state := generateRandomState()
 	
 	// 將state存儲到cookie中，避免多實例問題
-	ctx.SetCookie("oauth_state", state, 600, "/", "go-app-zq7qo4cr7q-de.a.run.app", true, true) // 10分鐘過期，Secure, HttpOnly
+	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Domain=go-app-zq7qo4cr7q-de.a.run.app; Max-Age=600; Secure; HttpOnly; SameSite=None", state))
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
@@ -90,7 +91,7 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	}
 	
 	// 清除state cookie
-	ctx.SetCookie("oauth_state", "", -1, "/", "go-app-zq7qo4cr7q-de.a.run.app", true, true)
+	ctx.Header("Set-Cookie", "oauth_state=; Path=/; Domain=go-app-zq7qo4cr7q-de.a.run.app; Max-Age=0; Secure; HttpOnly; SameSite=None")
 	
 	// 處理OAuth回調
 	user, err := c.oauthService.HandleLineCallback(ctx.Request.Context(), code)
