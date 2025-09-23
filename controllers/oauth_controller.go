@@ -5,12 +5,35 @@ import (
 	"encoding/hex"
 	"net/http"
 	"os"
+	"sync"
+	"time"
 	"go-simple-app/services"
 	"go-simple-app/logger"
 	
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
+
+// 內存存儲state參數，避免cookie問題
+var stateStore = struct {
+	sync.RWMutex
+	states map[string]time.Time
+}{
+	states: make(map[string]time.Time),
+}
+
+// 清理過期的state
+func cleanupExpiredStates() {
+	stateStore.Lock()
+	defer stateStore.Unlock()
+	
+	now := time.Now()
+	for state, expiry := range stateStore.states {
+		if now.After(expiry) {
+			delete(stateStore.states, state)
+		}
+	}
+}
 
 type OAuthController struct {
 	oauthService *services.OAuthService
@@ -27,8 +50,8 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	// 生成state參數防止CSRF攻擊
 	state := generateRandomState()
 	
-	// 將state存儲到session或cookie
-	ctx.SetCookie("oauth_state", state, 600, "/", "", false, false)
+	// 將state存儲到cookie中，避免多實例問題
+	ctx.SetCookie("oauth_state", state, 600, "/", "", false, true) // 10分鐘過期，HttpOnly
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
@@ -40,17 +63,34 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	code := ctx.Query("code")
 	state := ctx.Query("state")
 	
-	// 驗證state參數
-	cookieState, _ := ctx.Cookie("oauth_state")
-	if state != cookieState {
+	// 從cookie中獲取state參數
+	cookieState, err := ctx.Cookie("oauth_state")
+	if err != nil {
+		logger.Error("無法獲取state cookie", err, logrus.Fields{
+			"code": code,
+			"state": state,
+		})
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid state parameter",
+			"error": "Invalid state parameter - cookie not found",
+		})
+		return
+	}
+	
+	// 驗證state參數
+	if state != cookieState {
+		logger.Error("State參數不匹配", nil, logrus.Fields{
+			"code": code,
+			"state": state,
+			"cookieState": cookieState,
+		})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid state parameter - mismatch",
 		})
 		return
 	}
 	
 	// 清除state cookie
-	ctx.SetCookie("oauth_state", "", -1, "/", "", false, false)
+	ctx.SetCookie("oauth_state", "", -1, "/", "", false, true)
 	
 	// 處理OAuth回調
 	user, err := c.oauthService.HandleLineCallback(ctx.Request.Context(), code)
