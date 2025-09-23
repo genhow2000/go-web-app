@@ -108,7 +108,7 @@ func Load() *Config {
 			MongoDB:  getEnv("MONGODB_DATABASE", "chatbot"),
 		},
 		JWT: JWTConfig{
-			SecretKey: getEnv("JWT_SECRET", "your-secret-key"),
+			SecretKey: getEnv("JWT_SECRET", "go-web-app-super-secret-jwt-key-2024"),
 			ExpiresIn: getEnvAsInt("JWT_EXPIRES_IN", 24),
 		},
 		AI: AIConfig{

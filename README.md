@@ -52,7 +52,7 @@ docker-compose up -d
 
 ```bash
 export DB_PATH=data/app.db
-export JWT_SECRET=your-secret-key
+export JWT_SECRET=go-web-app-super-secret-jwt-key-2024
 ```
 
 4. 運行應用
@@ -89,7 +89,7 @@ go-web-app/
 | PORT       | 8080            | 服務端口              |
 | HOST       | 0.0.0.0         | 服務地址              |
 | DB_PATH    | data/app.db     | SQLite 數據庫文件路徑 |
-| JWT_SECRET | your-secret-key | JWT 密鑰              |
+| JWT_SECRET | go-web-app-super-secret-jwt-key-2024 | JWT 密鑰              |
 
 ## 📊 API 接口
 
