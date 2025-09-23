@@ -51,7 +51,7 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	state := generateRandomState()
 	
 	// 將state存儲到cookie中，避免多實例問題
-	ctx.SetCookie("oauth_state", state, 600, "/", "", false, true) // 10分鐘過期，HttpOnly
+	ctx.SetCookie("oauth_state", state, 600, "/", "", true, true) // 10分鐘過期，Secure, HttpOnly
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
@@ -90,7 +90,7 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	}
 	
 	// 清除state cookie
-	ctx.SetCookie("oauth_state", "", -1, "/", "", false, true)
+	ctx.SetCookie("oauth_state", "", -1, "/", "", true, true)
 	
 	// 處理OAuth回調
 	user, err := c.oauthService.HandleLineCallback(ctx.Request.Context(), code)
