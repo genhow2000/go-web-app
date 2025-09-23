@@ -20,6 +20,9 @@ type Merchant struct {
 	LastLogin      *time.Time `json:"last_login,omitempty" db:"last_login"`
 	LoginCount     int        `json:"login_count" db:"login_count"`
 	BusinessData   string     `json:"business_data,omitempty" db:"business_data"` // JSON 格式
+	OAuthProvider  *string    `json:"oauth_provider,omitempty" db:"oauth_provider"`
+	OAuthID        *string    `json:"oauth_id,omitempty" db:"oauth_id"`
+	OAuthData      *string    `json:"oauth_data,omitempty" db:"oauth_data"`
 	CreatedAt      time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at" db:"updated_at"`
 }
@@ -183,4 +186,30 @@ func (r *MerchantRepository) Count() (int, error) {
 	query := `SELECT COUNT(*) FROM merchants`
 	err := r.db.QueryRow(query).Scan(&count)
 	return count, err
+}
+
+// OAuth相關方法
+func (r *MerchantRepository) GetByOAuthID(provider, oauthID string) (*Merchant, error) {
+	merchant := &Merchant{}
+	query := `SELECT id, name, email, password, business_name, business_license, phone, address, business_type, is_active, is_verified, last_login, login_count, business_data, oauth_provider, oauth_id, oauth_data, created_at, updated_at FROM merchants WHERE oauth_provider = ? AND oauth_id = ?`
+	
+	err := r.db.QueryRow(query, provider, oauthID).Scan(
+		&merchant.ID, &merchant.Name, &merchant.Email, &merchant.Password,
+		&merchant.BusinessName, &merchant.BusinessLicense, &merchant.Phone, &merchant.Address,
+		&merchant.BusinessType, &merchant.IsActive, &merchant.IsVerified, &merchant.LastLogin,
+		&merchant.LoginCount, &merchant.BusinessData, &merchant.OAuthProvider, &merchant.OAuthID, &merchant.OAuthData,
+		&merchant.CreatedAt, &merchant.UpdatedAt,
+	)
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	return merchant, nil
+}
+
+func (r *MerchantRepository) UpdateOAuthData(id int, provider, oauthID, oauthData string) error {
+	query := `UPDATE merchants SET oauth_provider = ?, oauth_id = ?, oauth_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	_, err := r.db.Exec(query, provider, oauthID, oauthData, id)
+	return err
 }

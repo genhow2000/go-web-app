@@ -10,6 +10,7 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	AI       AIConfig
+	OAuth    OAuthConfig
 }
 
 type ServerConfig struct {
@@ -81,6 +82,19 @@ type GeminiConfig struct {
 	DailyLimit int    `json:"daily_limit"`
 }
 
+// OAuthConfig OAuth配置
+type OAuthConfig struct {
+	LINE LineOAuthConfig `json:"line"`
+}
+
+// LineOAuthConfig LINE OAuth配置
+type LineOAuthConfig struct {
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	RedirectURL  string   `json:"redirect_url"`
+	Scopes       []string `json:"scopes"`
+}
+
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -126,6 +140,14 @@ func Load() *Config {
 				MaxTokens:   getEnvAsInt("GEMINI_MAX_TOKENS", 100),
 				Temperature: getEnvAsFloat("GEMINI_TEMPERATURE", 0.7),
 				DailyLimit:  getEnvAsInt("GEMINI_DAILY_LIMIT", 1500),
+			},
+		},
+		OAuth: OAuthConfig{
+			LINE: LineOAuthConfig{
+				ClientID:     getEnv("LINE_CLIENT_ID", ""),
+				ClientSecret: getEnv("LINE_CLIENT_SECRET", ""),
+				RedirectURL:  getEnv("LINE_REDIRECT_URL", "http://localhost:8080/auth/line/callback"),
+				Scopes:       []string{"profile", "openid"},
 			},
 		},
 	}

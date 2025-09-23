@@ -6,19 +6,22 @@ import (
 )
 
 type Admin struct {
-	ID          int        `json:"id" db:"id"`
-	Name        string     `json:"name" db:"name"`
-	Email       string     `json:"email" db:"email"`
-	Password    string     `json:"-" db:"password"` // 不序列化密碼
-	AdminLevel  string     `json:"admin_level" db:"admin_level"` // normal, senior, super
-	Department  *string    `json:"department,omitempty" db:"department"`
-	Phone       *string    `json:"phone,omitempty" db:"phone"`
-	IsActive    bool       `json:"is_active" db:"is_active"`
-	LastLogin   *time.Time `json:"last_login,omitempty" db:"last_login"`
-	LoginCount  int        `json:"login_count" db:"login_count"`
-	AdminData   string     `json:"admin_data,omitempty" db:"admin_data"` // JSON 格式
-	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+	ID           int        `json:"id" db:"id"`
+	Name         string     `json:"name" db:"name"`
+	Email        string     `json:"email" db:"email"`
+	Password     string     `json:"-" db:"password"` // 不序列化密碼
+	AdminLevel   string     `json:"admin_level" db:"admin_level"` // normal, senior, super
+	Department   *string    `json:"department,omitempty" db:"department"`
+	Phone        *string    `json:"phone,omitempty" db:"phone"`
+	IsActive     bool       `json:"is_active" db:"is_active"`
+	LastLogin    *time.Time `json:"last_login,omitempty" db:"last_login"`
+	LoginCount   int        `json:"login_count" db:"login_count"`
+	AdminData    string     `json:"admin_data,omitempty" db:"admin_data"` // JSON 格式
+	OAuthProvider *string   `json:"oauth_provider,omitempty" db:"oauth_provider"`
+	OAuthID      *string    `json:"oauth_id,omitempty" db:"oauth_id"`
+	OAuthData    *string    `json:"oauth_data,omitempty" db:"oauth_data"`
+	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 type AdminRepository struct {
@@ -197,6 +200,31 @@ func (r *AdminRepository) Count() (int, error) {
 	query := `SELECT COUNT(*) FROM admins`
 	err := r.db.QueryRow(query).Scan(&count)
 	return count, err
+}
+
+// OAuth相關方法
+func (r *AdminRepository) GetByOAuthID(provider, oauthID string) (*Admin, error) {
+	admin := &Admin{}
+	query := `SELECT id, name, email, password, admin_level, department, phone, is_active, last_login, login_count, admin_data, oauth_provider, oauth_id, oauth_data, created_at, updated_at FROM admins WHERE oauth_provider = ? AND oauth_id = ?`
+	
+	err := r.db.QueryRow(query, provider, oauthID).Scan(
+		&admin.ID, &admin.Name, &admin.Email, &admin.Password,
+		&admin.AdminLevel, &admin.Department, &admin.Phone, &admin.IsActive,
+		&admin.LastLogin, &admin.LoginCount, &admin.AdminData, &admin.OAuthProvider, &admin.OAuthID, &admin.OAuthData,
+		&admin.CreatedAt, &admin.UpdatedAt,
+	)
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	return admin, nil
+}
+
+func (r *AdminRepository) UpdateOAuthData(id int, provider, oauthID, oauthData string) error {
+	query := `UPDATE admins SET oauth_provider = ?, oauth_id = ?, oauth_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	_, err := r.db.Exec(query, provider, oauthID, oauthData, id)
+	return err
 }
 
 // 檢查管理員權限級別

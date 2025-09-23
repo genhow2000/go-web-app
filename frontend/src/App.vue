@@ -5,8 +5,19 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/stores/auth'
+import { onMounted } from 'vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  setup() {
+    const authStore = useAuthStore()
+    
+    onMounted(async () => {
+      // 初始化認證狀態
+      await authStore.initAuth()
+    })
+  }
 }
 </script>
 

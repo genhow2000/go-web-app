@@ -60,6 +60,7 @@ func (a *Admin) GetUpdatedAt() time.Time          { return a.UpdatedAt }
 type UserRepositoryInterface interface {
 	GetByEmail(email string) (UserInterface, error)
 	GetByID(id int) (UserInterface, error)
+	GetByOAuthID(provider, oauthID string) (UserInterface, error)
 	UpdateLoginInfo(id int) error
 	LogLogin(userID int, ipAddress, userAgent string, success bool) error
 }
@@ -102,6 +103,20 @@ func (r *UnifiedUserRepository) GetByID(id int) (UserInterface, error) {
 		return merchant, nil
 	}
 	if admin, err := r.AdminRepo.GetByID(id); err == nil {
+		return admin, nil
+	}
+	return nil, sql.ErrNoRows
+}
+
+func (r *UnifiedUserRepository) GetByOAuthID(provider, oauthID string) (UserInterface, error) {
+	// 嘗試從所有表中查找OAuth用戶
+	if customer, err := r.CustomerRepo.GetByOAuthID(provider, oauthID); err == nil {
+		return customer, nil
+	}
+	if merchant, err := r.MerchantRepo.GetByOAuthID(provider, oauthID); err == nil {
+		return merchant, nil
+	}
+	if admin, err := r.AdminRepo.GetByOAuthID(provider, oauthID); err == nil {
 		return admin, nil
 	}
 	return nil, sql.ErrNoRows

@@ -68,16 +68,18 @@ func main() {
 	unifiedAuthService := services.NewUnifiedAuthService(unifiedUserRepo, &cfg.JWT)
 	unifiedAdminService := services.NewUnifiedAdminService(unifiedUserRepo)
 	chatService := services.NewChatServiceWithAI(aiManager)
+	oauthService := services.NewOAuthService(&cfg.OAuth, unifiedAuthService)
 	logger.Info("Service層初始化完成")
 
 	// 初始化 Controller
 	unifiedAuthController := controllers.NewUnifiedAuthController(unifiedAuthService)
 	adminController := controllers.NewAdminController(unifiedAdminService)
 	chatController := controllers.NewChatController(chatService)
+	oauthController := controllers.NewOAuthController(oauthService)
 	logger.Info("Controller層初始化完成")
 
 	// 設置路由
-	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService, chatController)
+	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService, chatController, oauthController)
 
 	// 設置 Gin 模式
 	if cfg.Server.Host == "0.0.0.0" {

@@ -28,6 +28,10 @@ type UnifiedRegisterRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 	Role     string `json:"role" binding:"required,oneof=customer merchant admin"`
+	// OAuth相關字段
+	OAuthProvider *string `json:"oauth_provider,omitempty"`
+	OAuthID       *string `json:"oauth_id,omitempty"`
+	OAuthData     *string `json:"oauth_data,omitempty"`
 	// 角色專用字段
 	Phone         *string `json:"phone,omitempty"`
 	Address       *string `json:"address,omitempty"`
@@ -369,4 +373,197 @@ func (s *UnifiedAuthService) IsMerchant(user models.UserInterface) bool {
 // 檢查用戶是否為客戶
 func (s *UnifiedAuthService) IsCustomer(user models.UserInterface) bool {
 	return s.IsRole(user, "customer")
+}
+
+// OAuth註冊方法
+func (s *UnifiedAuthService) RegisterWithOAuth(req *UnifiedRegisterRequest) (models.UserInterface, error) {
+	logger.Info("開始OAuth用戶註冊流程", logrus.Fields{
+		"email":          req.Email,
+		"name":           req.Name,
+		"role":           req.Role,
+		"oauth_provider": req.OAuthProvider,
+		"oauth_id":       req.OAuthID,
+	})
+
+	// 檢查OAuth用戶是否已存在
+	if req.OAuthProvider != nil && req.OAuthID != nil {
+		existingUser, _ := s.userRepo.GetByOAuthID(*req.OAuthProvider, *req.OAuthID)
+		if existingUser != nil {
+			logger.Warn("OAuth用戶已存在", logrus.Fields{
+				"oauth_provider": req.OAuthProvider,
+				"oauth_id":       req.OAuthID,
+			})
+			return existingUser, nil
+		}
+	}
+
+	// 檢查email是否已存在
+	existingUser, _ := s.userRepo.GetByEmail(req.Email)
+	if existingUser != nil {
+		logger.Warn("註冊失敗：電子郵件已被註冊", logrus.Fields{
+			"email": req.Email,
+		})
+		return nil, errors.New("該電子郵件已被註冊")
+	}
+
+	// 根據角色創建不同的用戶
+	switch req.Role {
+	case "customer":
+		return s.createCustomerWithOAuth(req)
+	case "merchant":
+		return s.createMerchantWithOAuth(req)
+	case "admin":
+		return s.createAdminWithOAuth(req)
+	default:
+		return nil, errors.New("無效的角色")
+	}
+}
+
+func (s *UnifiedAuthService) createCustomerWithOAuth(req *UnifiedRegisterRequest) (models.UserInterface, error) {
+	customer := &models.Customer{
+		Name:          req.Name,
+		Email:         req.Email,
+		Password:      "", // OAuth用戶不需要密碼
+		Phone:         req.Phone,
+		Address:       req.Address,
+		IsActive:      true,
+		EmailVerified: true, // OAuth用戶默認已驗證
+		LoginCount:    0,
+		ProfileData:   "{}",
+	}
+
+	// 設置OAuth資料
+	if req.OAuthProvider != nil {
+		customer.OAuthProvider = req.OAuthProvider
+	}
+	if req.OAuthID != nil {
+		customer.OAuthID = req.OAuthID
+	}
+	if req.OAuthData != nil {
+		customer.OAuthData = req.OAuthData
+	}
+
+	// 解析生日
+	if req.BirthDate != nil && *req.BirthDate != "" {
+		if birthDate, err := time.Parse("2006-01-02", *req.BirthDate); err == nil {
+			customer.BirthDate = &birthDate
+		}
+	}
+
+	if req.Gender != nil {
+		customer.Gender = req.Gender
+	}
+
+	if err := s.userRepo.CustomerRepo.Create(customer); err != nil {
+		logger.Error("OAuth客戶創建失敗", err, logrus.Fields{
+			"email":          req.Email,
+			"oauth_provider": req.OAuthProvider,
+		})
+		return nil, errors.New("註冊失敗")
+	}
+
+	logger.Info("OAuth客戶註冊成功", logrus.Fields{
+		"user_id":        customer.ID,
+		"email":          customer.Email,
+		"oauth_provider": customer.OAuthProvider,
+	})
+	
+	return customer, nil
+}
+
+func (s *UnifiedAuthService) createMerchantWithOAuth(req *UnifiedRegisterRequest) (models.UserInterface, error) {
+	merchant := &models.Merchant{
+		Name:         req.Name,
+		Email:        req.Email,
+		Password:     "", // OAuth用戶不需要密碼
+		Phone:        req.Phone,
+		Address:      req.Address,
+		BusinessType: req.BusinessType,
+		IsActive:     true,
+		IsVerified:   false,
+		LoginCount:   0,
+		BusinessData: "{}",
+	}
+
+	// 設置OAuth資料
+	if req.OAuthProvider != nil {
+		merchant.OAuthProvider = req.OAuthProvider
+	}
+	if req.OAuthID != nil {
+		merchant.OAuthID = req.OAuthID
+	}
+	if req.OAuthData != nil {
+		merchant.OAuthData = req.OAuthData
+	}
+
+	if req.BusinessName != nil {
+		merchant.BusinessName = req.BusinessName
+	}
+
+	if err := s.userRepo.MerchantRepo.Create(merchant); err != nil {
+		logger.Error("OAuth商戶創建失敗", err, logrus.Fields{
+			"email":          req.Email,
+			"oauth_provider": req.OAuthProvider,
+		})
+		return nil, errors.New("註冊失敗")
+	}
+
+	logger.Info("OAuth商戶註冊成功", logrus.Fields{
+		"user_id":        merchant.ID,
+		"email":          merchant.Email,
+		"oauth_provider": merchant.OAuthProvider,
+	})
+	
+	return merchant, nil
+}
+
+func (s *UnifiedAuthService) createAdminWithOAuth(req *UnifiedRegisterRequest) (models.UserInterface, error) {
+	adminLevel := "normal"
+	if req.AdminLevel != nil {
+		adminLevel = *req.AdminLevel
+	}
+
+	admin := &models.Admin{
+		Name:       req.Name,
+		Email:      req.Email,
+		Password:   "", // OAuth用戶不需要密碼
+		AdminLevel: adminLevel,
+		Department: req.Department,
+		Phone:      req.Phone,
+		IsActive:   true,
+		LoginCount: 0,
+		AdminData:  "{}",
+	}
+
+	// 設置OAuth資料
+	if req.OAuthProvider != nil {
+		admin.OAuthProvider = req.OAuthProvider
+	}
+	if req.OAuthID != nil {
+		admin.OAuthID = req.OAuthID
+	}
+	if req.OAuthData != nil {
+		admin.OAuthData = req.OAuthData
+	}
+
+	if err := s.userRepo.AdminRepo.Create(admin); err != nil {
+		logger.Error("OAuth管理員創建失敗", err, logrus.Fields{
+			"email":          req.Email,
+			"oauth_provider": req.OAuthProvider,
+		})
+		return nil, errors.New("註冊失敗")
+	}
+
+	logger.Info("OAuth管理員註冊成功", logrus.Fields{
+		"user_id":        admin.ID,
+		"email":          admin.Email,
+		"oauth_provider": admin.OAuthProvider,
+	})
+	
+	return admin, nil
+}
+
+// 生成JWT token的公開方法
+func (s *UnifiedAuthService) GenerateToken(user models.UserInterface) (string, error) {
+	return s.generateToken(user)
 }

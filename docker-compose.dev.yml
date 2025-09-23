@@ -1,9 +1,11 @@
 version: '3.8'
 
 services:
-  # Go 應用程式
+  # Go 應用程式（開發環境 - 只構建後端）
   go-app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
       - "8080:8080"
     environment:
@@ -21,9 +23,12 @@ services:
       - BASE_URL=${BASE_URL:-http://localhost:8080}
     volumes:
       - app_data:/app/data
-      - ./logs:/app/logs  # 映射日誌目錄到本地
+      - ./logs:/app/logs
+      - ./templates:/root/templates  # 映射模板文件，修改時即時生效
+      - ./static:/root/static        # 映射靜態文件
+      - ./frontend:/app/frontend     # 映射前端代碼目錄
     restart: unless-stopped
-    container_name: go-simple-app
+    container_name: go-simple-app-dev
     networks:
       - default
 

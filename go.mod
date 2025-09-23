@@ -9,6 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/crypto v0.17.0
+	golang.org/x/oauth2 v0.15.0
 	modernc.org/sqlite v1.28.0
 )
 

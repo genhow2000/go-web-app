@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
 	_ "modernc.org/sqlite"
 )
 
@@ -123,7 +122,12 @@ func runMigrations() error {
 		log.Printf("執行遷移: %s", migration.Name)
 		_, err = DB.Exec(string(content))
 		if err != nil {
-			return fmt.Errorf("執行遷移 %s 失敗: %w", migration.Name, err)
+			// 檢查是否為 "欄位已存在" 錯誤
+			if strings.Contains(err.Error(), "duplicate column name") {
+				log.Printf("警告: 遷移 %s 中的某些欄位已存在，跳過: %v", migration.Name, err)
+			} else {
+				return fmt.Errorf("執行遷移 %s 失敗: %w", migration.Name, err)
+			}
 		}
 
 		// 記錄遷移

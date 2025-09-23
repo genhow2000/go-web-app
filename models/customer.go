@@ -19,6 +19,9 @@ type Customer struct {
 	LastLogin     *time.Time `json:"last_login,omitempty" db:"last_login"`
 	LoginCount    int        `json:"login_count" db:"login_count"`
 	ProfileData   string     `json:"profile_data,omitempty" db:"profile_data"` // JSON 格式
+	OAuthProvider *string    `json:"oauth_provider,omitempty" db:"oauth_provider"`
+	OAuthID       *string    `json:"oauth_id,omitempty" db:"oauth_id"`
+	OAuthData     *string    `json:"oauth_data,omitempty" db:"oauth_data"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
 }
@@ -58,13 +61,14 @@ func (r *CustomerRepository) Create(customer *Customer) error {
 
 func (r *CustomerRepository) GetByEmail(email string) (*Customer, error) {
 	customer := &Customer{}
-	query := `SELECT id, name, email, password, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, created_at, updated_at FROM customers WHERE email = ?`
+	query := `SELECT id, name, email, password, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, oauth_provider, oauth_id, oauth_data, created_at, updated_at FROM customers WHERE email = ?`
 	
 	err := r.db.QueryRow(query, email).Scan(
 		&customer.ID, &customer.Name, &customer.Email, &customer.Password,
 		&customer.Phone, &customer.Address, &customer.BirthDate, &customer.Gender,
 		&customer.IsActive, &customer.EmailVerified, &customer.LastLogin, &customer.LoginCount,
-		&customer.ProfileData, &customer.CreatedAt, &customer.UpdatedAt,
+		&customer.ProfileData, &customer.OAuthProvider, &customer.OAuthID, &customer.OAuthData,
+		&customer.CreatedAt, &customer.UpdatedAt,
 	)
 	
 	if err != nil {
@@ -76,13 +80,14 @@ func (r *CustomerRepository) GetByEmail(email string) (*Customer, error) {
 
 func (r *CustomerRepository) GetByID(id int) (*Customer, error) {
 	customer := &Customer{}
-	query := `SELECT id, name, email, password, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, created_at, updated_at FROM customers WHERE id = ?`
+	query := `SELECT id, name, email, password, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, oauth_provider, oauth_id, oauth_data, created_at, updated_at FROM customers WHERE id = ?`
 	
 	err := r.db.QueryRow(query, id).Scan(
 		&customer.ID, &customer.Name, &customer.Email, &customer.Password,
 		&customer.Phone, &customer.Address, &customer.BirthDate, &customer.Gender,
 		&customer.IsActive, &customer.EmailVerified, &customer.LastLogin, &customer.LoginCount,
-		&customer.ProfileData, &customer.CreatedAt, &customer.UpdatedAt,
+		&customer.ProfileData, &customer.OAuthProvider, &customer.OAuthID, &customer.OAuthData,
+		&customer.CreatedAt, &customer.UpdatedAt,
 	)
 	
 	if err != nil {
@@ -93,7 +98,7 @@ func (r *CustomerRepository) GetByID(id int) (*Customer, error) {
 }
 
 func (r *CustomerRepository) GetAll() ([]*Customer, error) {
-	query := `SELECT id, name, email, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, created_at, updated_at FROM customers ORDER BY created_at DESC`
+	query := `SELECT id, name, email, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, oauth_provider, oauth_id, oauth_data, created_at, updated_at FROM customers ORDER BY created_at DESC`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -105,7 +110,8 @@ func (r *CustomerRepository) GetAll() ([]*Customer, error) {
 		customer := &Customer{}
 		err := rows.Scan(&customer.ID, &customer.Name, &customer.Email, &customer.Phone, &customer.Address, 
 			&customer.BirthDate, &customer.Gender, &customer.IsActive, &customer.EmailVerified, 
-			&customer.LastLogin, &customer.LoginCount, &customer.ProfileData, &customer.CreatedAt, &customer.UpdatedAt)
+			&customer.LastLogin, &customer.LoginCount, &customer.ProfileData, &customer.OAuthProvider, 
+			&customer.OAuthID, &customer.OAuthData, &customer.CreatedAt, &customer.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -151,4 +157,30 @@ func (r *CustomerRepository) Count() (int, error) {
 	query := `SELECT COUNT(*) FROM customers`
 	err := r.db.QueryRow(query).Scan(&count)
 	return count, err
+}
+
+// OAuth相關方法
+func (r *CustomerRepository) GetByOAuthID(provider, oauthID string) (*Customer, error) {
+	customer := &Customer{}
+	query := `SELECT id, name, email, password, phone, address, birth_date, gender, is_active, email_verified, last_login, login_count, profile_data, oauth_provider, oauth_id, oauth_data, created_at, updated_at FROM customers WHERE oauth_provider = ? AND oauth_id = ?`
+	
+	err := r.db.QueryRow(query, provider, oauthID).Scan(
+		&customer.ID, &customer.Name, &customer.Email, &customer.Password,
+		&customer.Phone, &customer.Address, &customer.BirthDate, &customer.Gender,
+		&customer.IsActive, &customer.EmailVerified, &customer.LastLogin, &customer.LoginCount,
+		&customer.ProfileData, &customer.OAuthProvider, &customer.OAuthID, &customer.OAuthData,
+		&customer.CreatedAt, &customer.UpdatedAt,
+	)
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	return customer, nil
+}
+
+func (r *CustomerRepository) UpdateOAuthData(id int, provider, oauthID, oauthData string) error {
+	query := `UPDATE customers SET oauth_provider = ?, oauth_id = ?, oauth_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	_, err := r.db.Exec(query, provider, oauthID, oauthData, id)
+	return err
 }

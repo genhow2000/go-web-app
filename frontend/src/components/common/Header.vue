@@ -78,8 +78,16 @@ export default {
     }
     
     const handleLogout = async () => {
-      if (confirm('確定要登出嗎？')) {
+      console.log('用戶點擊登出按鈕')
+      console.log('開始登出流程...')
+      try {
         await authStore.logout()
+        console.log('登出成功，準備跳轉')
+        showDropdown.value = false
+        router.push('/')
+      } catch (error) {
+        console.error('登出過程中發生錯誤:', error)
+        // 即使登出失敗，也要跳轉到首頁
         showDropdown.value = false
         router.push('/')
       }

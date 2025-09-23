@@ -21,6 +21,7 @@ func SetupRoutes(
 	adminController *controllers.AdminController,
 	unifiedAuthService *services.UnifiedAuthService,
 	chatController *controllers.ChatController,
+	oauthController *controllers.OAuthController,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -480,6 +481,13 @@ func SetupRoutes(
 
 	// 登出路由
 	r.POST("/logout", unifiedAuthController.Logout)
+
+	// OAuth路由
+	oauth := r.Group("/auth")
+	{
+		oauth.GET("/line", oauthController.LineLogin)
+		oauth.GET("/line/callback", oauthController.LineCallback)
+	}
 
 
 	// 聊天功能路由（支援匿名用戶）
