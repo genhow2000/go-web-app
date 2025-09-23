@@ -17,6 +17,14 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/auth': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/logout': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/customer': {
         target: 'http://localhost:8080',
         changeOrigin: true,
@@ -29,11 +37,7 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '/auth': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-      '/logout': {
+      '/assets': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       }

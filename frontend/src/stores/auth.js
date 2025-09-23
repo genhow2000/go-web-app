@@ -20,13 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false)
 
   const isAuthenticated = computed(() => {
-    const result = !!token.value && !!user.value
-    console.log('認證狀態計算:', { 
-      token: !!token.value, 
-      user: !!user.value, 
-      isAuthenticated: result 
-    })
-    return result
+    return !!token.value && !!user.value
   })
 
   // 登入
@@ -35,18 +29,14 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       // 根據角色選擇正確的登入端點
       const loginEndpoint = `/${role}/login`
-      console.log('發送登入請求到:', loginEndpoint, credentials)
       
       const response = await api.post(loginEndpoint, credentials)
-      console.log('API響應:', response.data)
       
       const { token: newToken, user: userData } = response.data
       
       token.value = newToken
       user.value = userData
       localStorage.setItem('authToken', newToken)
-      
-      console.log('認證狀態已更新:', { token: !!newToken, user: !!userData })
       
       return { success: true, data: response.data }
     } catch (error) {
@@ -63,31 +53,46 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 登出
   const logout = async () => {
-    console.log('開始登出流程...')
     try {
       await api.post('/logout')
-      console.log('登出請求成功')
     } catch (error) {
       console.error('登出請求失敗:', error)
       // 即使請求失敗，也要清除本地狀態
     } finally {
-      console.log('清除本地認證狀態...')
       user.value = null
       token.value = null
       localStorage.removeItem('authToken')
-      console.log('登出完成，認證狀態:', { 
-        isAuthenticated: !!token.value && !!user.value,
-        token: !!token.value,
-        user: !!user.value
-      })
     }
   }
 
   // 獲取用戶信息
   const fetchUserProfile = async () => {
-    if (!token.value || !user.value) return
+    if (!token.value) return
     
     try {
+      // 如果沒有用戶信息，先嘗試從 token 中解析基本信息
+      if (!user.value) {
+        try {
+          // 解析 JWT token 獲取基本信息
+          const base64Url = token.value.split('.')[1]
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+          const payload = JSON.parse(atob(base64))
+          user.value = {
+            id: payload.id,
+            email: payload.email,
+            name: payload.name,
+            role: payload.role,
+            is_active: payload.is_active
+          }
+        } catch (error) {
+          console.error('JWT token 解析失敗:', error)
+          // 如果解析失敗，清除 token
+          token.value = null
+          localStorage.removeItem('authToken')
+          return
+        }
+      }
+      
       // 根據用戶角色選擇正確的個人資料端點
       const role = user.value.role
       const profileEndpoint = `/${role}/profile`
@@ -104,10 +109,26 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 初始化認證狀態
   const initAuth = async () => {
+    // 檢查URL參數中的token（用於第三方登入）
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlToken = urlParams.get('token')
+    
     // 重新檢查 token（可能從 cookie 中獲取）
-    const currentToken = localStorage.getItem('authToken') || getTokenFromCookie()
+    const localStorageToken = localStorage.getItem('authToken')
+    const cookieToken = getTokenFromCookie()
+    const currentToken = urlToken || localStorageToken || cookieToken
+    
     if (currentToken && currentToken !== token.value) {
       token.value = currentToken
+      // 同步到localStorage，確保前端狀態一致
+      localStorage.setItem('authToken', currentToken)
+      
+      // 如果是從URL參數獲取的token，清除URL參數
+      if (urlToken) {
+        const url = new URL(window.location)
+        url.searchParams.delete('token')
+        window.history.replaceState({}, '', url)
+      }
     }
     
     if (token.value) {

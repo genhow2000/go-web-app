@@ -118,6 +118,10 @@ export default {
     const user = computed(() => authStore.user)
 
     const loadUserInfo = async () => {
+      if (!authStore.isAuthenticated) {
+        return
+      }
+      
       try {
         const response = await api.get('/customer/profile')
         const userData = response.data
@@ -138,7 +142,16 @@ export default {
     }
 
     onMounted(() => {
-      loadUserInfo()
+      if (authStore.isAuthenticated) {
+        loadUserInfo()
+      } else {
+        // 如果認證狀態未準備好，等待一下再重試
+        setTimeout(() => {
+          if (authStore.isAuthenticated) {
+            loadUserInfo()
+          }
+        }, 1000)
+      }
     })
 
     return {

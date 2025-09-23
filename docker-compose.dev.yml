@@ -13,6 +13,7 @@ services:
       - DB_PATH=/app/data/app.db
       - MONGODB_URI=mongodb+srv://genhow2000_db_user:PKwCLU4qXzrpAjSY@cluster0.atzcxpw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - MONGODB_DATABASE=chatbot
+      - JWT_SECRET=${JWT_SECRET:-go-web-app-super-secret-jwt-key-2024}
       - GROQ_API_KEY=${GROQ_API_KEY:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - AI_PRIMARY_PROVIDER=groq
@@ -21,11 +22,13 @@ services:
       - LINE_CLIENT_SECRET=${LINE_CLIENT_SECRET:-2cca495d6b53e8b2a2d684ee87113f01}
       - LINE_REDIRECT_URL=${LINE_REDIRECT_URL:-http://localhost:8080/auth/line/callback}
       - BASE_URL=${BASE_URL:-http://localhost:8080}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
     volumes:
       - app_data:/app/data
       - ./logs:/app/logs
       - ./templates:/root/templates  # 映射模板文件，修改時即時生效
       - ./static:/root/static        # 映射靜態文件
+      - ./frontend/dist:/root/static/dist  # 映射前端構建文件
       - ./frontend:/app/frontend     # 映射前端代碼目錄
     restart: unless-stopped
     container_name: go-simple-app-dev

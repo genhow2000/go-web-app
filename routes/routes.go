@@ -31,7 +31,7 @@ func SetupRoutes(
 	// 靜態文件 - 使用環境變量或默認路徑
 	staticPath := os.Getenv("STATIC_PATH")
 	if staticPath == "" {
-		staticPath = "/root/static"
+		staticPath = "./static"
 	}
 	
 	r.Static("/static", staticPath)
@@ -432,7 +432,9 @@ func SetupRoutes(
 	customerProtected.Use(middleware.CustomerMiddleware())
 	{
 		// 客戶儀表板（已移至Vue.js）
-		// customerProtected.GET("/dashboard", unifiedAuthController.ShowCustomerDashboard)
+		// customerProtected.GET("/dashboard", func(c *gin.Context) {
+		//	c.File(staticPath + "/dist/index.html")
+		// })
 		customerProtected.GET("/profile", unifiedAuthController.GetUserProfile)
 	}
 

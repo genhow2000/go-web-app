@@ -4,9 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"net/http"
+	"os"
 	"go-simple-app/services"
+	"go-simple-app/logger"
 	
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type OAuthController struct {
@@ -52,15 +55,28 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	// 處理OAuth回調
 	user, err := c.oauthService.HandleLineCallback(ctx.Request.Context(), code)
 	if err != nil {
+		logger.Error("OAuth回調處理失敗", err, logrus.Fields{
+			"code": code,
+			"state": state,
+		})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "OAuth login failed",
 		})
 		return
 	}
 	
+	logger.Info("OAuth回調處理成功", logrus.Fields{
+		"user_id": user.GetID(),
+		"role": user.GetRole(),
+		"email": user.GetEmail(),
+	})
+	
 	// 生成JWT token
 	token, err := c.oauthService.GenerateToken(user)
 	if err != nil {
+		logger.Error("JWT token生成失敗", err, logrus.Fields{
+			"user_id": user.GetID(),
+		})
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Token generation failed",
 		})
@@ -70,8 +86,18 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	// 設置認證cookie
 	ctx.SetCookie("auth_token", token, 3600*24, "/", "", false, false)
 	
-	// 重定向到儀表板
-	ctx.Redirect(http.StatusFound, "/customer/dashboard")
+	logger.Info("OAuth登入完成，重定向到儀表板", logrus.Fields{
+		"user_id": user.GetID(),
+		"redirect_url": "/customer/dashboard",
+	})
+	
+	// 重定向到儀表板，並在URL中傳遞token
+	// 使用環境變數或默認值
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3000"
+	}
+	ctx.Redirect(http.StatusFound, frontendURL+"/customer/dashboard?token="+token)
 }
 
 func generateRandomState() string {

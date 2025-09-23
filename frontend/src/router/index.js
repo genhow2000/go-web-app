@@ -119,8 +119,17 @@ const router = createRouter({
 })
 
 // 路由守衛
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
+  // 確保認證狀態已初始化
+  if (!authStore.user && !authStore.token) {
+    try {
+      await authStore.initAuth()
+    } catch (error) {
+      console.error('認證初始化失敗', error)
+    }
+  }
   
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated) {

@@ -47,7 +47,7 @@ func (c *UnifiedAuthController) CustomerLogin(ctx *gin.Context) {
 	}
 
 	// 設置認證 cookie
-	ctx.SetCookie("auth_token", response.Token, 3600*24, "/", "", false, true)
+	ctx.SetCookie("auth_token", response.Token, 3600*24, "/", "", false, false)
 	
 	// 如果是頁面請求，跳轉到儀表板
 	if ctx.Request.Header.Get("Accept") == "text/html" {
@@ -114,7 +114,7 @@ func (c *UnifiedAuthController) MerchantLogin(ctx *gin.Context) {
 	}
 
 	// 設置認證 cookie
-	ctx.SetCookie("auth_token", response.Token, 3600*24, "/", "", false, true)
+	ctx.SetCookie("auth_token", response.Token, 3600*24, "/", "", false, false)
 	
 	// 如果是頁面請求，跳轉到儀表板
 	if ctx.Request.Header.Get("Accept") == "text/html" {
@@ -181,7 +181,7 @@ func (c *UnifiedAuthController) AdminLogin(ctx *gin.Context) {
 	}
 
 	// 設置認證 cookie
-	ctx.SetCookie("auth_token", response.Token, 3600*24, "/", "", false, true)
+	ctx.SetCookie("auth_token", response.Token, 3600*24, "/", "", false, false)
 	
 	// 如果是頁面請求，跳轉到儀表板
 	if ctx.Request.Header.Get("Accept") == "text/html" {
@@ -250,7 +250,7 @@ func (c *UnifiedAuthController) ShowMerchantDashboard(ctx *gin.Context) {
 // 登出
 func (c *UnifiedAuthController) Logout(ctx *gin.Context) {
 	// 清除 cookie
-	ctx.SetCookie("auth_token", "", -1, "/", "", false, true)
+	ctx.SetCookie("auth_token", "", -1, "/", "", false, false)
 	
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "登出成功",

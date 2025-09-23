@@ -47,6 +47,9 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
+          # 獲取服務 URL
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(status.url)" 2>/dev/null || echo "https://go-app-313144253156.asia-east1.run.app")
+          
           gcloud run deploy $SERVICE_NAME \
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
@@ -58,13 +61,19 @@ jobs:
             --max-instances 10 \
             --min-instances 0 \
             --set-env-vars "DB_PATH=/tmp/app.db" \
+            --set-env-vars "STATIC_PATH=/root/static" \
             --set-env-vars "MONGODB_URI=$MONGODB_URI" \
             --set-env-vars "MONGODB_DATABASE=chatbot" \
             --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
             --set-env-vars "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" \
             --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
             --set-env-vars "AI_PRIMARY_PROVIDER=groq" \
-            --set-env-vars "AI_FALLBACK_PROVIDER=gemini"
+            --set-env-vars "AI_FALLBACK_PROVIDER=gemini" \
+            --set-env-vars "LINE_CLIENT_ID=${{ secrets.LINE_CLIENT_ID }}" \
+            --set-env-vars "LINE_CLIENT_SECRET=${{ secrets.LINE_CLIENT_SECRET }}" \
+            --set-env-vars "LINE_REDIRECT_URL=$SERVICE_URL/auth/line/callback" \
+            --set-env-vars "BASE_URL=$SERVICE_URL" \
+            --set-env-vars "FRONTEND_URL=$SERVICE_URL"
 
       - name: Show Output
         run: |
