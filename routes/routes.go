@@ -46,6 +46,14 @@ func SetupRoutes(
 	r.Use(middleware.RequestLogger())
 	r.Use(middleware.ErrorLogger())
 	
+	// 健康檢查路由
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+			"message": "Service is running",
+		})
+	})
+	
 	// 記錄服務器啟動
 	logger.Info("服務器路由初始化完成", logrus.Fields{
 		"templates_loaded": true,
@@ -107,7 +115,12 @@ func SetupRoutes(
 
 	// Vue.js 前端路由 - 提供所有頁面
 	r.GET("/", func(c *gin.Context) {
-		c.File(staticPath + "/dist/index.html")
+		filePath := staticPath + "/dist/index.html"
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Frontend not found"})
+			return
+		}
+		c.File(filePath)
 	})
 	
 	// Vue.js SPA 路由 - 所有前端路由都返回 index.html
