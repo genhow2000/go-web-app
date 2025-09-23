@@ -60,14 +60,6 @@ func SetupRoutes(
 		"middleware_count": 3,
 	})
 
-	// 健康檢查
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status":   "healthy",
-			"service":  "go-simple-app",
-			"database": "connected",
-		})
-	})
 
 	// 系統統計
 	r.GET("/api/stats", func(c *gin.Context) {
