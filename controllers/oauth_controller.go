@@ -158,21 +158,7 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	}
 	
 	// 設置認證cookie
-	baseURL := os.Getenv("BASE_URL")
-	if baseURL == "" {
-		// 如果沒有設定 BASE_URL，從請求中動態獲取
-		scheme := "https"
-		if ctx.GetHeader("X-Forwarded-Proto") == "http" {
-			scheme = "http"
-		}
-		host := ctx.GetHeader("Host")
-		if host == "" {
-			host = ctx.Request.Host
-		}
-		baseURL = fmt.Sprintf("%s://%s", scheme, host)
-	}
-	domain := strings.TrimPrefix(baseURL, "https://")
-	domain = strings.TrimPrefix(domain, "http://")
+	// 重新使用之前獲取的 baseURL 和 domain
 	ctx.SetCookie("auth_token", token, 3600*24, "/", domain, true, true)
 	
 	logger.Info("OAuth登入完成，重定向到儀表板", logrus.Fields{
