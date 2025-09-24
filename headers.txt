@@ -1,0 +1,14 @@
+HTTP/2 302 
+access-control-allow-credentials: true
+access-control-allow-headers: Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With
+access-control-allow-methods: POST, OPTIONS, GET, PUT, DELETE
+access-control-allow-origin: *
+content-type: text/html; charset=utf-8
+location: https://access.line.me/oauth2/v2.1/authorize?access_type=offline&client_id=2008159551&redirect_uri=https%3A%2F%2Fgo-app-zq7qo4cr7q-de.a.run.app%2Fauth%2Fline%2Fcallback&response_type=code&scope=profile+openid&state=f9819705d3adcd648df946bc7b2d4885
+set-cookie: oauth_state=f9819705d3adcd648df946bc7b2d4885; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=None
+x-cloud-trace-context: e4a4d5d7c527ed9242aebb89be56ec48
+date: Wed, 24 Sep 2025 01:48:43 GMT
+server: Google Frontend
+content-length: 290
+alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+

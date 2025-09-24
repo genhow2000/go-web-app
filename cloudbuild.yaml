@@ -31,6 +31,8 @@ steps:
       - "--allow-unauthenticated"
       - "--port"
       - "8080"
+      - "--set-env-vars"
+      - "GOOGLE_CLOUD_PROJECT=fleet-day-383710"
       - "--memory"
       - "512Mi"
       - "--cpu"

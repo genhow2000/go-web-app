@@ -54,7 +54,9 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	// 將state存儲到cookie中，避免多實例問題
 	// 對於 Cloud Run，不需要設定 Domain，讓瀏覽器自動處理
 	// 使用 SameSite=Lax 來確保跨站重定向時 Cookie 能被發送
+	// 添加多個 Cookie 設定來確保兼容性
 	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=Lax", state))
+	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; SameSite=Lax", state))
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
