@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
 	"time"
 	"go-simple-app/services"
@@ -53,24 +52,8 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	state := generateRandomState()
 	
 	// 將state存儲到cookie中，避免多實例問題
-	// 使用環境變數動態獲取域名
-	baseURL := os.Getenv("BASE_URL")
-	if baseURL == "" {
-		// 如果沒有設定 BASE_URL，從請求中動態獲取
-		scheme := "https"
-		if ctx.GetHeader("X-Forwarded-Proto") == "http" {
-			scheme = "http"
-		}
-		host := ctx.GetHeader("Host")
-		if host == "" {
-			host = ctx.Request.Host
-		}
-		baseURL = fmt.Sprintf("%s://%s", scheme, host)
-	}
-	// 從 BASE_URL 提取域名
-	domain := strings.TrimPrefix(baseURL, "https://")
-	domain = strings.TrimPrefix(domain, "http://")
-	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Domain=%s; Max-Age=600; Secure; HttpOnly; SameSite=None", state, domain))
+	// 對於 Cloud Run，不需要設定 Domain，讓瀏覽器自動處理
+	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=None", state))
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
@@ -109,22 +92,7 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	}
 	
 	// 清除state cookie
-	baseURL := os.Getenv("BASE_URL")
-	if baseURL == "" {
-		// 如果沒有設定 BASE_URL，從請求中動態獲取
-		scheme := "https"
-		if ctx.GetHeader("X-Forwarded-Proto") == "http" {
-			scheme = "http"
-		}
-		host := ctx.GetHeader("Host")
-		if host == "" {
-			host = ctx.Request.Host
-		}
-		baseURL = fmt.Sprintf("%s://%s", scheme, host)
-	}
-	domain := strings.TrimPrefix(baseURL, "https://")
-	domain = strings.TrimPrefix(domain, "http://")
-	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=; Path=/; Domain=%s; Max-Age=0; Secure; HttpOnly; SameSite=None", domain))
+	ctx.Header("Set-Cookie", "oauth_state=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None")
 	
 	// 處理OAuth回調
 	user, err := c.oauthService.HandleLineCallback(ctx.Request.Context(), code)
@@ -158,8 +126,8 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	}
 	
 	// 設置認證cookie
-	// 重新使用之前獲取的 baseURL 和 domain
-	ctx.SetCookie("auth_token", token, 3600*24, "/", domain, true, true)
+	// 不設定 Domain，讓瀏覽器自動處理
+	ctx.SetCookie("auth_token", token, 3600*24, "/", "", true, true)
 	
 	logger.Info("OAuth登入完成，重定向到儀表板", logrus.Fields{
 		"user_id": user.GetID(),
