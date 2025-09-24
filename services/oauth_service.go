@@ -30,6 +30,9 @@ func NewOAuthService(config *config.OAuthConfig, authService *UnifiedAuthService
 }
 
 func (s *OAuthService) GetLineAuthURL(state string) string {
+	// 添加調試日誌
+	fmt.Printf("DEBUG: LINE OAuth Config - ClientID: %s, RedirectURL: %s\n", s.config.LINE.ClientID, s.config.LINE.RedirectURL)
+	
 	oauth2Config := &oauth2.Config{
 		ClientID:     s.config.LINE.ClientID,
 		ClientSecret: s.config.LINE.ClientSecret,
@@ -41,7 +44,10 @@ func (s *OAuthService) GetLineAuthURL(state string) string {
 		},
 	}
 	
-	return oauth2Config.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	authURL := oauth2Config.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	fmt.Printf("DEBUG: Generated Auth URL: %s\n", authURL)
+	
+	return authURL
 }
 
 func (s *OAuthService) HandleLineCallback(ctx context.Context, code string) (models.UserInterface, error) {
