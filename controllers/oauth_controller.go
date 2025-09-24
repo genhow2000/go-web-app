@@ -53,7 +53,12 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	
 	// 將state存儲到cookie中，避免多實例問題
 	// 對於 Cloud Run，不需要設定 Domain，讓瀏覽器自動處理
-	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=None", state))
+	// 在 HTTPS 環境中使用 SameSite=None，在 HTTP 環境中使用 SameSite=Lax
+	sameSite := "Lax"
+	if ctx.GetHeader("X-Forwarded-Proto") == "https" || ctx.Request.TLS != nil {
+		sameSite = "None"
+	}
+	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=%s", state, sameSite))
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
@@ -71,6 +76,8 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 		logger.Error("無法獲取state cookie", err, logrus.Fields{
 			"code": code,
 			"state": state,
+			"cookies": ctx.Request.Header.Get("Cookie"),
+			"user_agent": ctx.GetHeader("User-Agent"),
 		})
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid state parameter - cookie not found",
@@ -92,7 +99,11 @@ func (c *OAuthController) LineCallback(ctx *gin.Context) {
 	}
 	
 	// 清除state cookie
-	ctx.Header("Set-Cookie", "oauth_state=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None")
+	sameSite := "Lax"
+	if ctx.GetHeader("X-Forwarded-Proto") == "https" || ctx.Request.TLS != nil {
+		sameSite = "None"
+	}
+	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=%s", sameSite))
 	
 	// 處理OAuth回調
 	user, err := c.oauthService.HandleLineCallback(ctx.Request.Context(), code)
