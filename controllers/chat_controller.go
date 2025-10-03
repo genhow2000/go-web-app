@@ -122,10 +122,14 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 
 	// 检查MongoDB是否可用
 	if !database.IsMongoDBConnected() {
-		// MongoDB不可用，使用模拟模式
-		aiResponse := cc.getFallbackResponse(req.Message)
+		// MongoDB不可用，但嘗試使用真正的AI服務
+		aiResponse, err := cc.chatService.GenerateAIResponse(req.Message, req.ConversationID)
+		if err != nil {
+			// 如果AI服務也失敗，使用模拟模式
+			aiResponse = cc.getFallbackResponse(req.Message)
+		}
 		
-		// 返回模拟响应
+		// 返回响应
 		responseData := gin.H{
 			"success": true,
 			"conversation_id": req.ConversationID,
@@ -140,7 +144,7 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 				"timestamp": time.Now(),
 			},
 			"is_anonymous": isAnonymous,
-			"simulation_mode": true,
+			"simulation_mode": !database.IsMongoDBConnected(),
 		}
 
 		// 如果是匿名用户，添加使用统计
