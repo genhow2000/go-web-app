@@ -60,6 +60,12 @@ vendor/
 # Build output
 main
 go-simple-app
+*.exe
+
+# Environment files
+.env
+.env.local
+.env.backup.*
 
 # Coverage
 coverage.out
