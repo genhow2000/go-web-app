@@ -477,6 +477,16 @@ func (s *StockService) GetTopVolume(limit int) ([]models.StockWithPrice, error) 
 
 // UpdateStockPricesFromTSE 從台灣證交所更新股票價格
 func (s *StockService) UpdateStockPricesFromTSE() error {
+	return s.UpdateStockPricesFromTSEWithForce(false)
+}
+
+// UpdateStockPricesFromTSEWithForce 從台灣證交所更新股票價格（可強制更新）
+func (s *StockService) UpdateStockPricesFromTSEWithForce(forceUpdate bool) error {
+	if !forceUpdate && !s.isTradingTime(time.Now()) {
+		fmt.Println("非交易時間，跳過更新")
+		return nil
+	}
+	
 	fmt.Println("開始從台灣證交所更新股票價格...")
 	
 	// 獲取所有股票代碼

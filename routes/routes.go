@@ -210,6 +210,7 @@ func SetupRoutes(
 		
 		// 價格更新（管理員功能）
 		stockAPI.POST("/update-prices", stockController.UpdateStockPrices)
+		stockAPI.POST("/force-update-prices", stockController.ForceUpdateStockPrices)
 	}
 
 	// 設置購物車路由

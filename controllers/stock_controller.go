@@ -111,6 +111,23 @@ func (sc *StockController) UpdateStockPrices(c *gin.Context) {
 	})
 }
 
+// ForceUpdateStockPrices 強制更新所有股票價格（手動更新）
+func (sc *StockController) ForceUpdateStockPrices(c *gin.Context) {
+	err := sc.stockService.UpdateStockPricesFromTSEWithForce(true)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "所有股票價格強制更新成功",
+	})
+}
+
 // GetStockCategories 獲取股票分類
 func (sc *StockController) GetStockCategories(c *gin.Context) {
 	categories, err := sc.stockService.GetStockCategories()
