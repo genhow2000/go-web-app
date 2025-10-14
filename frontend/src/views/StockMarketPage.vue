@@ -101,7 +101,7 @@
               :class="stock.price?.change >= 0 ? 'positive' : 'negative'"
             >
               {{ stock.price?.change >= 0 ? '+' : '' }}{{ formatChange(stock.price?.change) }}
-              ({{ stock.price?.changePercent >= 0 ? '+' : '' }}{{ formatChangePercent(stock.price?.changePercent) }}%)
+              ({{ stock.price?.change_percent >= 0 ? '+' : '' }}{{ formatChangePercent(stock.price?.change_percent) }}%)
             </div>
           </div>
         </div>
