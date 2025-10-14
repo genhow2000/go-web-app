@@ -214,10 +214,10 @@ export default {
       return Number(index).toFixed(2)
     }
 
-    // 格式化漲跌點數（整數）
+    // 格式化漲跌點數（小數點第二位）
     const formatChange = (change) => {
       if (change === null || change === undefined) return '--'
-      return Math.round(Number(change))
+      return Number(change).toFixed(2)
     }
 
     // 格式化漲跌幅（小數點第二位）
