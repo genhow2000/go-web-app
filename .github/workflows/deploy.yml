@@ -46,8 +46,8 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          # 獲取服務 URL
-          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(status.url)" 2>/dev/null || echo "https://go-app-313144253156.asia-east1.run.app")
+          # 使用固定的服務 URL (舊格式)
+          SERVICE_URL="https://go-app-313144253156.asia-east1.run.app"
 
           gcloud run deploy $SERVICE_NAME \
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
