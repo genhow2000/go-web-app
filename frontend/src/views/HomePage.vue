@@ -140,6 +140,11 @@
       🚀
     </button>
 
+    <!-- 台股站按鈕 -->
+    <button class="stock-market-btn" @click="goToStockMarket" title="阿和台股站">
+      📈
+    </button>
+
     <!-- AI 聊天窗口 -->
     <AIChatWindow 
       v-if="showChatWindow"
@@ -266,6 +271,11 @@ export default {
       router.push('/tech-showcase')
     }
 
+    // 前往台股站頁面
+    const goToStockMarket = () => {
+      router.push('/stock-market')
+    }
+
     // 加入 LINE 機器人
     const joinLineBot = () => {
       showLineBotQR.value = true
@@ -298,6 +308,7 @@ export default {
       toggleFavorite,
       toggleChatWindow,
       goToTechShowcase,
+      goToStockMarket,
       joinLineBot,
       closeLineBotQR
     }

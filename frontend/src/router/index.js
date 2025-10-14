@@ -18,6 +18,9 @@ import EditProduct from '@/views/merchant/EditProduct.vue'
 import CategoryPage from '@/views/CategoryPage.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
 import CartPage from '@/views/CartPage.vue'
+import StockListPage from '@/views/StockListPage.vue'
+import StockDetailPage from '@/views/StockDetailPage.vue'
+import StockMarketPage from '@/views/StockMarketPage.vue'
 
 const routes = [
   {
@@ -45,6 +48,22 @@ const routes = [
     name: 'CartPage',
     component: CartPage,
     meta: { requiresAuth: true, role: 'customer' }
+  },
+  // 股票相關頁面
+  {
+    path: '/stock-market',
+    name: 'StockMarketPage',
+    component: StockMarketPage
+  },
+  {
+    path: '/stocks',
+    name: 'StockListPage',
+    component: StockListPage
+  },
+  {
+    path: '/stock/:code',
+    name: 'StockDetailPage',
+    component: StockDetailPage
   },
   // 登入頁面
   {

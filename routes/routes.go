@@ -114,6 +114,9 @@ func SetupRoutes(
 	r.GET("/tech-showcase", func(c *gin.Context) {
 		c.File(staticPath + "/dist/index.html")
 	})
+	r.GET("/stock-market", func(c *gin.Context) {
+		c.File(staticPath + "/dist/index.html")
+	})
 	r.GET("/customer/login", func(c *gin.Context) {
 		c.File(staticPath + "/dist/index.html")
 	})
@@ -153,6 +156,12 @@ func SetupRoutes(
 	r.GET("/product/:id", func(c *gin.Context) {
 		c.File(staticPath + "/dist/index.html")
 	})
+	r.GET("/stocks", func(c *gin.Context) {
+		c.File(staticPath + "/dist/index.html")
+	})
+	r.GET("/stock/:code", func(c *gin.Context) {
+		c.File(staticPath + "/dist/index.html")
+	})
 
 	// 商城API路由
 	api := r.Group("/api")
@@ -170,6 +179,37 @@ func SetupRoutes(
 		api.GET("/image/placeholder", imageController.GeneratePlaceholderImage)
 		api.GET("/image/proxy", imageProxyController.ProxyImage)
 		api.GET("/image/external", imageProxyController.GenerateExternalImage)
+	}
+
+	// 股票API路由
+	stockRepo := models.NewStockRepository(database.DB)
+	stockService := services.NewStockService(stockRepo)
+	stockController := controllers.NewStockController(stockService)
+	
+	// 啟動股票價格自動更新（每5秒，僅交易時間）
+	stockService.StartAutoUpdate()
+	
+	stockAPI := r.Group("/api/stock")
+	{
+		// 股票列表和搜尋
+		stockAPI.GET("/stocks", stockController.GetStocks)
+		stockAPI.GET("/stocks/:code", stockController.GetStock)
+		stockAPI.GET("/search", stockController.SearchStocks)
+		stockAPI.GET("/category/:category", stockController.GetStocksByCategory)
+		
+		// 股票分類
+		stockAPI.GET("/categories", stockController.GetStockCategories)
+		
+		// 排行榜
+		stockAPI.GET("/top-gainers", stockController.GetTopGainers)
+		stockAPI.GET("/top-losers", stockController.GetTopLosers)
+		stockAPI.GET("/top-volume", stockController.GetTopVolume)
+		
+		// 市場統計
+		stockAPI.GET("/market-stats", stockController.GetMarketStats)
+		
+		// 價格更新（管理員功能）
+		stockAPI.POST("/update-prices", stockController.UpdateStockPrices)
 	}
 
 	// 設置購物車路由

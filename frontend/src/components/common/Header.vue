@@ -7,6 +7,8 @@
         <li><a href="#home">首頁</a></li>
         <li><a href="#categories">分類</a></li>
         <li><a href="#products">商品</a></li>
+        <li><router-link to="/stock-market">阿和台股站</router-link></li>
+        <li><router-link to="/stocks">股票列表</router-link></li>
         <li><a href="#about">關於我們</a></li>
         <li><router-link to="/tech-showcase">技術展示</router-link></li>
       </ul>
