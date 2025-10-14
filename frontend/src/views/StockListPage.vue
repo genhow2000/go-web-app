@@ -328,7 +328,9 @@ export default {
 
     const formatPercent = (percent) => {
       if (percent === null || percent === undefined) return '--'
-      return percent > 0 ? `+${percent.toFixed(2)}%` : `${percent.toFixed(2)}%`
+      const numPercent = Number(percent)
+      if (isNaN(numPercent)) return '--'
+      return numPercent > 0 ? `+${numPercent.toFixed(2)}%` : `${numPercent.toFixed(2)}%`
     }
 
     const formatVolume = (volume) => {
