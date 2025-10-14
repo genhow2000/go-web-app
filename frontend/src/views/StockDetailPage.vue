@@ -1,5 +1,13 @@
 <template>
   <div class="stock-detail-page">
+    <!-- 回上一頁按鈕 -->
+    <div class="back-button-container">
+      <button @click="goBack" class="back-button">
+        <span class="back-icon">←</span>
+        回上一頁
+      </button>
+    </div>
+
     <!-- 載入狀態 -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
@@ -644,5 +652,37 @@ export default {
   .indicators-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
+}
+
+/* 回上一頁按鈕 */
+.back-button-container {
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  color: #495057;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.back-icon {
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 </style>

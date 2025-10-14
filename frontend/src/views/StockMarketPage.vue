@@ -15,8 +15,8 @@
             <h3>加權指數</h3>
             <div class="price">{{ formatIndex(marketData.taiex) }}</div>
             <div class="change" :class="marketData.taiexChange >= 0 ? 'positive' : 'negative'">
-              {{ marketData.taiexChange >= 0 ? '+' : '' }}{{ marketData.taiexChange || '--' }}
-              ({{ marketData.taiexChangePercent >= 0 ? '+' : '' }}{{ marketData.taiexChangePercent || '--' }}%)
+              {{ marketData.taiexChange >= 0 ? '+' : '' }}{{ formatChange(marketData.taiexChange) }}
+              ({{ marketData.taiexChangePercent >= 0 ? '+' : '' }}{{ formatChangePercent(marketData.taiexChangePercent) }}%)
             </div>
           </div>
         </div>
@@ -36,8 +36,8 @@
             <h3>上櫃指數</h3>
             <div class="price">{{ formatIndex(marketData.otcIndex) }}</div>
             <div class="change" :class="marketData.otcChange >= 0 ? 'positive' : 'negative'">
-              {{ marketData.otcChange >= 0 ? '+' : '' }}{{ marketData.otcChange || '--' }}
-              ({{ marketData.otcChangePercent >= 0 ? '+' : '' }}{{ marketData.otcChangePercent || '--' }}%)
+              {{ marketData.otcChange >= 0 ? '+' : '' }}{{ formatChange(marketData.otcChange) }}
+              ({{ marketData.otcChangePercent >= 0 ? '+' : '' }}{{ formatChangePercent(marketData.otcChangePercent) }}%)
             </div>
           </div>
         </div>
@@ -136,6 +136,9 @@ export default {
       taiex: null,
       taiexChange: null,
       taiexChangePercent: null,
+      otcIndex: null,
+      otcChange: null,
+      otcChangePercent: null,
       listedCount: null,
       totalAmount: null
     })
@@ -163,6 +166,9 @@ export default {
             taiex: data.data.taiex,
             taiexChange: data.data.taiexChange,
             taiexChangePercent: data.data.taiexChangePercent,
+            otcIndex: data.data.otc_index,
+            otcChange: data.data.otc_change,
+            otcChangePercent: data.data.otc_change_percent,
             listedCount: data.data.total_count,
             totalAmount: data.data.total_amount
           }
@@ -174,6 +180,9 @@ export default {
           taiex: 17500.25,
           taiexChange: 125.50,
           taiexChangePercent: 0.72,
+          otcIndex: 220.0,
+          otcChange: 2.5,
+          otcChangePercent: 1.15,
           listedCount: 44,
           totalAmount: 2850.75
         }
@@ -186,10 +195,22 @@ export default {
       return Number(price).toFixed(2)
     }
 
-    // 格式化指數（整數）
+    // 格式化指數（小數點第二位）
     const formatIndex = (index) => {
       if (index === null || index === undefined) return '--'
-      return Math.round(Number(index)).toLocaleString()
+      return Number(index).toFixed(2)
+    }
+
+    // 格式化漲跌點數（整數）
+    const formatChange = (change) => {
+      if (change === null || change === undefined) return '--'
+      return Math.round(Number(change))
+    }
+
+    // 格式化漲跌幅（小數點第二位）
+    const formatChangePercent = (percent) => {
+      if (percent === null || percent === undefined) return '--'
+      return Number(percent).toFixed(2)
     }
 
     // 格式化金額
@@ -200,7 +221,7 @@ export default {
 
     // 跳轉到股票詳情
     const goToStockDetail = (code) => {
-      router.push(`/stocks/${code}`)
+      router.push(`/stocks?code=${code}`)
     }
 
     onMounted(() => {
@@ -213,6 +234,8 @@ export default {
       marketData,
       formatPrice,
       formatIndex,
+      formatChange,
+      formatChangePercent,
       formatAmount,
       goToStockDetail
     }

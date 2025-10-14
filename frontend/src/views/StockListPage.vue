@@ -173,7 +173,7 @@
 
 <script>
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import StockPagination from '@/components/stock/StockPagination.vue'
 import api from '@/services/api'
 
@@ -184,6 +184,7 @@ export default {
   },
   setup() {
     const router = useRouter()
+    const route = useRoute()
     
     // 響應式數據
     const stocks = ref([])
@@ -202,6 +203,15 @@ export default {
       has_next: false,
       has_prev: false
     })
+
+    // 處理URL參數
+    const handleUrlParams = () => {
+      const code = route.query.code
+      if (code) {
+        searchKeyword.value = code
+        performSearch()
+      }
+    }
 
     // 載入股票分類
     const loadCategories = async () => {
@@ -345,7 +355,10 @@ export default {
     // 組件掛載時載入數據
     onMounted(() => {
       loadCategories()
-      loadStocks()
+      handleUrlParams() // 處理URL參數
+      if (!route.query.code) {
+        loadStocks() // 如果沒有特定股票代碼，載入所有股票
+      }
     })
 
     return {
