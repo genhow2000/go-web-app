@@ -1,0 +1,85 @@
+name: Monitor Cloud Run URL
+
+on:
+  schedule:
+    # 每小時檢查一次
+    - cron: "0 * * * *"
+  workflow_dispatch: # 手動觸發
+
+env:
+  PROJECT_ID: fleet-day-383710
+  SERVICE_NAME: go-app
+  REGION: asia-east1
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt update
+          sudo apt install gh
+
+      - name: Authenticate GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Run URL Monitor
+        run: |
+          chmod +x scripts/monitor-url.sh
+          ./scripts/monitor-url.sh
+        env:
+          LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
+          LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          # 獲取當前 URL
+          CURRENT_URL=$(gcloud run services describe $SERVICE_NAME --region=$REGION --format="value(status.url)")
+
+          # 建立 PR
+          gh pr create \
+            --title "自動更新 Cloud Run URL: $CURRENT_URL" \
+            --body "檢測到 Cloud Run URL 變動，自動更新相關配置。
+
+          新 URL: $CURRENT_URL
+
+          此 PR 包含以下更新：
+          - 更新 cloudbuild.yaml 中的環境變數
+          - 更新相關配置文件
+
+          請檢查並合併此 PR。" \
+            --head $(git branch --show-current) \
+            --base main
