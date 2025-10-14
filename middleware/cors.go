@@ -10,7 +10,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		
 		// 允許的來源列表
 		allowedOrigins := []string{
-			"https://go-app-313144253156.asia-east1.run.app",
+			"https://go-app-zq7qo4cr7q-de.a.run.app",
 			"https://access.line.me",
 			"https://access-auto.line.me",
 			"http://localhost:8080",
