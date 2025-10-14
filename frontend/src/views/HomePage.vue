@@ -19,6 +19,18 @@
             <button class="hint-btn" @click="toggleChatWindow">立即諮詢</button>
           </div>
         </div>
+
+        <!-- LINE 機器人加入提示 -->
+        <div class="line-bot-hint hero-hint">
+          <div class="hint-content">
+            <div class="hint-icon">📱</div>
+            <div class="hint-text">
+              <h4>加入我們的 LINE 機器人</h4>
+              <p>掃描 QR Code 或搜尋 @351thdpd 加入我們的 LINE 機器人，獲得即時購物協助和專屬優惠！</p>
+            </div>
+            <button class="hint-btn line-btn" @click="joinLineBot">立即加入</button>
+          </div>
+        </div>
         
         <div class="search-bar">
           <input 
@@ -133,6 +145,12 @@
       v-if="showChatWindow"
       @close="toggleChatWindow"
     />
+
+    <!-- LINE 機器人 QR Code 模態框 -->
+    <LineBotQR 
+      :show="showLineBotQR"
+      @close="closeLineBotQR"
+    />
   </div>
 </template>
 
@@ -143,6 +161,7 @@ import Header from '@/components/common/Header.vue'
 import Footer from '@/components/common/Footer.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
 import AIChatWindow from '@/components/chat/AIChatWindow.vue'
+import LineBotQR from '@/components/common/LineBotQR.vue'
 import api from '@/services/api'
 
 export default {
@@ -151,7 +170,8 @@ export default {
     Header,
     Footer,
     ProductCard,
-    AIChatWindow
+    AIChatWindow,
+    LineBotQR
   },
   setup() {
     const router = useRouter()
@@ -164,6 +184,7 @@ export default {
     const loadingProducts = ref(false)
     const showChatWindow = ref(false)
     const hasNewMessage = ref(false)
+    const showLineBotQR = ref(false)
 
     // 分類圖標映射
     const categoryIcons = {
@@ -245,6 +266,16 @@ export default {
       router.push('/tech-showcase')
     }
 
+    // 加入 LINE 機器人
+    const joinLineBot = () => {
+      showLineBotQR.value = true
+    }
+
+    // 關閉 LINE 機器人 QR Code 模態框
+    const closeLineBotQR = () => {
+      showLineBotQR.value = false
+    }
+
     // 組件掛載時載入數據
     onMounted(() => {
       loadCategories()
@@ -259,13 +290,16 @@ export default {
       loadingProducts,
       showChatWindow,
       hasNewMessage,
+      showLineBotQR,
       getCategoryIcon,
       searchProducts,
       filterByCategory,
       viewProduct,
       toggleFavorite,
       toggleChatWindow,
-      goToTechShowcase
+      goToTechShowcase,
+      joinLineBot,
+      closeLineBotQR
     }
   }
 }
