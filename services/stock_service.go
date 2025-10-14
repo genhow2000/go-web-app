@@ -569,8 +569,8 @@ type TSEStockData struct {
 	ClosePrice   string  `json:"y"`   // 昨收價
 	Volume       string  `json:"v"`   // 成交量
 	Amount       string  `json:"a"`   // 成交金額
-	Change       string  `json:"ch"`  // 漲跌
-	ChangePercent string `json:"chp"` // 漲跌幅
+	Change       string  `json:"ch"`  // 漲跌（實際上是股票代碼）
+	ChangePercent string `json:"%"`   // 漲跌幅（實際上是時間）
 	Time         string  `json:"t"`   // 時間
 }
 
@@ -665,17 +665,26 @@ func (t *TSEAPIService) ParseInt64(s string) int64 {
 func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 	tse := NewTSEAPIService()
 	
+	// 計算漲跌點數和漲跌幅
+	currentPrice := tse.ParseFloat(tseData.Price)
+	prevClose := tse.ParseFloat(tseData.ClosePrice)
+	change := currentPrice - prevClose
+	var changePercent float64
+	if prevClose > 0 {
+		changePercent = (change / prevClose) * 100
+	}
+	
 	return &models.StockPrice{
 		StockCode:     tseData.Code,
-		Price:         tse.ParseFloat(tseData.Price),
+		Price:         currentPrice,
 		OpenPrice:     tse.ParseFloat(tseData.OpenPrice),
 		HighPrice:     tse.ParseFloat(tseData.HighPrice),
 		LowPrice:      tse.ParseFloat(tseData.LowPrice),
-		ClosePrice:    tse.ParseFloat(tseData.ClosePrice),
+		ClosePrice:    prevClose,
 		Volume:        tse.ParseInt64(tseData.Volume),
 		Amount:        tse.ParseFloat(tseData.Amount),
-		Change:        tse.ParseFloat(tseData.Change),
-		ChangePercent: tse.ParseFloat(tseData.ChangePercent),
+		Change:        change,
+		ChangePercent: changePercent,
 		UpdatedAt:     time.Now(),
 	}
 }
