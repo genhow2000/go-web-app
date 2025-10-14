@@ -2,8 +2,21 @@
   <div class="stock-market-page">
     <!-- 頁面標題 -->
     <div class="page-header">
-      <h1>阿和台股站</h1>
-      <p class="subtitle">即時台股資訊，投資理財好幫手</p>
+      <div class="header-content">
+        <div class="header-left">
+          <button @click="goHome" class="home-button">
+            <span class="home-icon">🏠</span>
+            回首頁
+          </button>
+        </div>
+        <div class="header-center">
+          <h1>阿和台股站</h1>
+          <p class="subtitle">即時台股資訊，投資理財好幫手</p>
+        </div>
+        <div class="header-right">
+          <!-- 預留空間，保持對稱 -->
+        </div>
+      </div>
     </div>
 
     <!-- 市場概覽 -->
@@ -224,6 +237,11 @@ export default {
       router.push(`/stocks?code=${code}`)
     }
 
+    // 回首頁
+    const goHome = () => {
+      router.push('/')
+    }
+
     onMounted(() => {
       fetchHotStocks()
       fetchMarketData()
@@ -237,7 +255,8 @@ export default {
       formatChange,
       formatChangePercent,
       formatAmount,
-      goToStockDetail
+      goToStockDetail,
+      goHome
     }
   }
 }
@@ -251,19 +270,71 @@ export default {
 }
 
 .page-header {
-  text-align: center;
   margin-bottom: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 2rem 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.header-left, .header-right {
+  flex: 1;
+}
+
+.header-center {
+  flex: 2;
+  text-align: center;
 }
 
 .page-header h1 {
   font-size: 2.5rem;
-  color: #2c3e50;
+  color: white;
   margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .subtitle {
   font-size: 1.2rem;
-  color: #7f8c8d;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* 回首頁按鈕 */
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.home-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.home-icon {
+  font-size: 1.1rem;
 }
 
 .market-overview {

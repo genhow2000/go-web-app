@@ -2,8 +2,21 @@
   <div class="stock-list-page">
     <!-- 頁面標題 -->
     <div class="page-header">
-      <h1>台股列表</h1>
-      <p class="page-subtitle">即時股票資訊與分頁瀏覽</p>
+      <div class="header-content">
+        <div class="header-left">
+          <button @click="goToStockMarket" class="home-button">
+            <span class="home-icon">📈</span>
+            回台股站
+          </button>
+        </div>
+        <div class="header-center">
+          <h1>台股列表</h1>
+          <p class="page-subtitle">即時股票資訊與分頁瀏覽</p>
+        </div>
+        <div class="header-right">
+          <!-- 預留空間，保持對稱 -->
+        </div>
+      </div>
     </div>
 
     <!-- 篩選和搜尋區域 -->
@@ -297,6 +310,11 @@ export default {
       router.push(`/stock/${code}`)
     }
 
+    // 回阿和台股站
+    const goToStockMarket = () => {
+      router.push('/stock-market')
+    }
+
     // 格式化函數
     const formatPrice = (price) => {
       if (price === null || price === undefined) return '--'
@@ -378,6 +396,7 @@ export default {
       onPageChange,
       onPerPageChange,
       viewStockDetail,
+      goToStockMarket,
       formatPrice,
       formatChange,
       formatPercent,
@@ -398,18 +417,70 @@ export default {
 }
 
 .page-header {
-  text-align: center;
   margin-bottom: 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 2rem 0;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.header-left, .header-right {
+  flex: 1;
+}
+
+.header-center {
+  flex: 2;
+  text-align: center;
 }
 
 .page-header h1 {
-  color: #2d3748;
+  color: white;
   font-size: 2.5rem;
   margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .page-subtitle {
-  color: #718096;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* 回首頁按鈕 */
+.home-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.home-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.home-icon {
   font-size: 1.1rem;
 }
 
