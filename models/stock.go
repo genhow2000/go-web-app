@@ -416,15 +416,9 @@ func (r *StockRepositoryImpl) UpdateStockPrice(price *StockPrice) error {
 		return fmt.Errorf("查詢股票失敗: %w", err)
 	}
 	
-	// 先刪除現有的價格記錄，然後插入新的
-	_, err = r.db.Exec("DELETE FROM stock_prices WHERE stock_code = ?", price.StockCode)
-	if err != nil {
-		return fmt.Errorf("刪除舊價格記錄失敗: %w", err)
-	}
-	
-	// 插入新的價格記錄
+	// 使用 UPSERT (INSERT OR REPLACE) 來避免資料庫鎖定
 	query := `
-		INSERT INTO stock_prices (stock_code, price, open_price, high_price, low_price, close_price, volume, amount, change, change_percent, updated_at)
+		INSERT OR REPLACE INTO stock_prices (stock_code, price, open_price, high_price, low_price, close_price, volume, amount, change, change_percent, updated_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	
@@ -434,7 +428,7 @@ func (r *StockRepositoryImpl) UpdateStockPrice(price *StockPrice) error {
 		price.Change, price.ChangePercent, price.UpdatedAt)
 	
 	if err != nil {
-		return fmt.Errorf("插入股票價格失敗: %w", err)
+		return fmt.Errorf("更新股票價格失敗: %w", err)
 	}
 	
 	return nil

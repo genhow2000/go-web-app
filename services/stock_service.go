@@ -74,50 +74,10 @@ func (s *StockService) GetStockCategories() ([]models.StockCategory, error) {
 	return s.stockRepo.GetCategories()
 }
 
-// UpdateStockPricesFromAPI 從外部API更新股票價格
+// UpdateStockPricesFromAPI 已棄用，請使用 UpdateStockPricesFromTSE
+// 此函數保留用於向後兼容，但實際會調用真實的TSE API
 func (s *StockService) UpdateStockPricesFromAPI() error {
-	// 這裡可以整合證交所或其他股票API
-	// 目前先實作一個模擬的更新邏輯
-	
-	// 獲取所有活躍的股票代碼
-	activeFilter := models.StockFilter{
-		IsActive: &[]bool{true}[0],
-	}
-	
-	// 獲取前100支股票進行價格更新
-	pagination := models.Pagination{
-		CurrentPage: 1,
-		PerPage:     100,
-	}
-	
-	stocks, err := s.stockRepo.GetStocks(activeFilter, pagination)
-	if err != nil {
-		return err
-	}
-	
-	// 模擬價格更新（實際應該從API獲取）
-	for _, stock := range stocks {
-		if stock.Price != nil {
-			// 模擬價格變動
-			priceChange := (float64(time.Now().Unix()%100) - 50) / 1000 // -5% 到 +5% 的變動
-			newPrice := stock.Price.Price * (1 + priceChange)
-			
-			// 更新價格資訊
-			updatedPrice := *stock.Price
-			updatedPrice.Price = newPrice
-			updatedPrice.Change = newPrice - stock.Price.ClosePrice
-			updatedPrice.ChangePercent = (updatedPrice.Change / stock.Price.ClosePrice) * 100
-			updatedPrice.UpdatedAt = time.Now()
-			
-			// 保存到資料庫
-			err := s.stockRepo.UpdateStockPrice(&updatedPrice)
-			if err != nil {
-				fmt.Printf("更新股票 %s 價格失敗: %v\n", stock.Code, err)
-			}
-		}
-	}
-	
-	return nil
+	return s.UpdateStockPricesFromTSE()
 }
 
 // GetMarketStats 獲取市場統計資訊
@@ -161,26 +121,15 @@ func (s *StockService) GetMarketStats() (map[string]interface{}, error) {
 	// 獲取真實的台灣加權指數
 	taiex, taiexChange, taiexChangePercent, err := s.getTaiwanIndex()
 	if err != nil {
-		// 如果獲取失敗，使用模擬數據
-		if stocksWithPrice > 0 {
-			avgChange := totalChange / float64(stocksWithPrice)
-			taiex = 17500.0 + (avgChange * 100)
-			taiexChange = avgChange * 100
-			taiexChangePercent = (taiexChange / taiex) * 100
-		} else {
-			taiex = 17500.0
-			taiexChange = 0
-			taiexChangePercent = 0
-		}
+		// 如果獲取失敗，返回錯誤而不是使用模擬數據
+		return nil, fmt.Errorf("獲取台灣加權指數失敗: %w", err)
 	}
 
 	// 獲取上櫃指數
 	otcIndex, otcChange, otcChangePercent, err := s.getOTCIndex()
 	if err != nil {
-		// 如果獲取失敗，使用模擬數據
-		otcIndex = 220.0
-		otcChange = 0
-		otcChangePercent = 0
+		// 如果獲取失敗，返回錯誤而不是使用模擬數據
+		return nil, fmt.Errorf("獲取上櫃指數失敗: %w", err)
 	}
 
 	// 獲取各市場股票數量
@@ -709,9 +658,9 @@ func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 	}
 }
 
-// StartAutoUpdate 開始自動更新股票價格（每5秒）
+// StartAutoUpdate 開始自動更新股票價格（每30秒）
 func (s *StockService) StartAutoUpdate() {
-	s.ticker = time.NewTicker(5 * time.Second)
+	s.ticker = time.NewTicker(30 * time.Second)
 	
 	go func() {
 		for {
@@ -737,7 +686,7 @@ func (s *StockService) StartAutoUpdate() {
 		}
 	}()
 	
-	fmt.Println("股票價格自動更新已啟動（每5秒，僅交易時間）")
+	fmt.Println("股票價格自動更新已啟動（每30秒，僅交易時間）")
 }
 
 // isTradingTime 檢查是否在交易時間內

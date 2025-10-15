@@ -39,10 +39,15 @@ func Init() error {
 	}
 	
 	// 連接 SQLite 資料庫 (使用純Go驅動)
-	DB, err = sql.Open("sqlite", dbPath)
+	DB, err = sql.Open("sqlite", dbPath+"?_journal_mode=WAL&_synchronous=NORMAL&_cache_size=1000&_timeout=5000")
 	if err != nil {
 		return fmt.Errorf("無法連接資料庫: %w", err)
 	}
+
+	// 設置連接池參數
+	DB.SetMaxOpenConns(10)
+	DB.SetMaxIdleConns(5)
+	DB.SetConnMaxLifetime(0)
 
 	// 測試連接
 	if err = DB.Ping(); err != nil {
