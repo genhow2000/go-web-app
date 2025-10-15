@@ -180,12 +180,16 @@
         <span class="stats-value">{{ pagination.total_pages }}</span>
         <span class="stats-label">頁</span>
       </div>
+      <div v-if="lastUpdateTime" class="stats-item">
+        <span class="stats-label">最後更新：</span>
+        <span class="stats-value">{{ lastUpdateTime.toLocaleString() }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import StockPagination from '@/components/stock/StockPagination.vue'
 import api from '@/services/api'
@@ -208,6 +212,8 @@ export default {
     const selectedMarket = ref('')
     const sortBy = ref('code')
     const sortOrder = ref('asc')
+    const autoUpdateInterval = ref(null)
+    const lastUpdateTime = ref(null)
     const pagination = ref({
       current_page: 1,
       per_page: 20,
@@ -237,8 +243,11 @@ export default {
     }
 
     // 載入股票列表
-    const loadStocks = async () => {
-      loading.value = true
+    const loadStocks = async (showLoading = true) => {
+      if (showLoading) {
+        loading.value = true
+      }
+      
       try {
         const params = {
           page: pagination.value.current_page,
@@ -255,11 +264,28 @@ export default {
         
         stocks.value = data.stocks || []
         pagination.value = data.pagination || pagination.value
+        lastUpdateTime.value = new Date()
       } catch (error) {
         console.error('載入股票列表失敗:', error)
         stocks.value = []
       } finally {
         loading.value = false
+      }
+    }
+
+    // 開始自動更新
+    const startAutoUpdate = () => {
+      // 每15秒更新一次
+      autoUpdateInterval.value = setInterval(() => {
+        loadStocks(false) // 不顯示loading
+      }, 15000)
+    }
+
+    // 停止自動更新
+    const stopAutoUpdate = () => {
+      if (autoUpdateInterval.value) {
+        clearInterval(autoUpdateInterval.value)
+        autoUpdateInterval.value = null
       }
     }
 
@@ -317,7 +343,7 @@ export default {
 
     // 格式化函數
     const formatPrice = (price) => {
-      if (price === null || price === undefined) return '--'
+      if (price === null || price === undefined || price === 0) return '--'
       return price.toFixed(2)
     }
 
@@ -334,7 +360,7 @@ export default {
     }
 
     const formatVolume = (volume) => {
-      if (volume === null || volume === undefined) return '--'
+      if (volume === null || volume === undefined || volume === 0) return '--'
       if (volume >= 100000000) {
         return `${(volume / 100000000).toFixed(1)}億`
       } else if (volume >= 10000) {
@@ -344,7 +370,7 @@ export default {
     }
 
     const formatAmount = (amount) => {
-      if (amount === null || amount === undefined) return '--'
+      if (amount === null || amount === undefined || amount === 0) return '--'
       if (amount >= 100000000) {
         return `${(amount / 100000000).toFixed(1)}億`
       } else if (amount >= 10000) {
@@ -379,6 +405,12 @@ export default {
       if (!route.query.code) {
         loadStocks() // 如果沒有特定股票代碼，載入所有股票
       }
+      startAutoUpdate()
+    })
+
+    // 組件卸載時停止自動更新
+    onUnmounted(() => {
+      stopAutoUpdate()
     })
 
     return {
@@ -391,6 +423,7 @@ export default {
       sortBy,
       sortOrder,
       pagination,
+      lastUpdateTime,
       onSearchInput,
       performSearch,
       onFilterChange,

@@ -14,6 +14,15 @@
       <p>載入股票資訊中...</p>
     </div>
 
+    <!-- 股票不存在 -->
+    <div v-else-if="!loading && !stock" class="error-container">
+      <div class="error-message">
+        <h2>股票不存在</h2>
+        <p>找不到您要查看的股票資訊</p>
+        <button @click="goBack" class="back-button">返回股票列表</button>
+      </div>
+    </div>
+
     <!-- 股票詳情 -->
     <div v-else-if="stock" class="stock-detail">
       <!-- 股票基本資訊 -->
@@ -43,6 +52,14 @@
             </span>
           </div>
         </div>
+        <div v-else class="no-price-info">
+          <div class="no-price-message">暫無價格數據</div>
+        </div>
+      </div>
+
+      <!-- 最後更新時間 -->
+      <div v-if="lastUpdateTime" class="last-update">
+        <small>最後更新：{{ lastUpdateTime.toLocaleString() }}</small>
       </div>
 
       <!-- 價格資訊卡片 -->
@@ -146,7 +163,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 
@@ -161,6 +178,8 @@ export default {
     const loading = ref(true)
     const selectedPeriod = ref('1d')
     const categories = ref([])
+    const autoUpdateInterval = ref(null)
+    const lastUpdateTime = ref(null)
 
     // 圖表週期選項
     const chartPeriods = ref([
@@ -183,21 +202,42 @@ export default {
     }
 
     // 載入股票詳情
-    const loadStockDetail = async () => {
+    const loadStockDetail = async (showLoading = true) => {
       const code = route.params.code
       if (!code) {
         loading.value = false
         return
       }
 
+      if (showLoading) {
+        loading.value = true
+      }
+
       try {
         const response = await api.get(`/api/stock/stocks/${code}`)
         stock.value = response.data.data
+        lastUpdateTime.value = new Date()
       } catch (error) {
         console.error('載入股票詳情失敗:', error)
         stock.value = null
       } finally {
         loading.value = false
+      }
+    }
+
+    // 開始自動更新
+    const startAutoUpdate = () => {
+      // 每10秒更新一次
+      autoUpdateInterval.value = setInterval(() => {
+        loadStockDetail(false) // 不顯示loading
+      }, 10000)
+    }
+
+    // 停止自動更新
+    const stopAutoUpdate = () => {
+      if (autoUpdateInterval.value) {
+        clearInterval(autoUpdateInterval.value)
+        autoUpdateInterval.value = null
       }
     }
 
@@ -208,7 +248,7 @@ export default {
 
     // 格式化函數
     const formatPrice = (price) => {
-      if (price === null || price === undefined) return '--'
+      if (price === null || price === undefined || price === 0) return '--'
       return price.toFixed(2)
     }
 
@@ -223,7 +263,7 @@ export default {
     }
 
     const formatVolume = (volume) => {
-      if (volume === null || volume === undefined) return '--'
+      if (volume === null || volume === undefined || volume === 0) return '--'
       if (volume >= 100000000) {
         return `${(volume / 100000000).toFixed(1)}億`
       } else if (volume >= 10000) {
@@ -233,7 +273,7 @@ export default {
     }
 
     const formatAmount = (amount) => {
-      if (amount === null || amount === undefined) return '--'
+      if (amount === null || amount === undefined || amount === 0) return '--'
       if (amount >= 100000000) {
         return `${(amount / 100000000).toFixed(1)}億`
       } else if (amount >= 10000) {
@@ -258,10 +298,23 @@ export default {
       return period ? period.label : value
     }
 
+    // 監聽路由參數變化
+    watch(() => route.params.code, (newCode) => {
+      if (newCode) {
+        loadStockDetail()
+      }
+    })
+
     // 組件掛載時載入數據
     onMounted(() => {
       loadCategories()
       loadStockDetail()
+      startAutoUpdate()
+    })
+
+    // 組件卸載時停止自動更新
+    onUnmounted(() => {
+      stopAutoUpdate()
     })
 
     return {
@@ -269,6 +322,7 @@ export default {
       loading,
       selectedPeriod,
       chartPeriods,
+      lastUpdateTime,
       loadStockDetail,
       goBack,
       formatPrice,

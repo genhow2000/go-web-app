@@ -132,12 +132,15 @@
           <p class="note">零股交易：1股起</p>
         </div>
       </div>
+      <div v-if="lastUpdateTime" class="last-update">
+        <small>最後更新：{{ lastUpdateTime.toLocaleString() }}</small>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
@@ -155,6 +158,8 @@ export default {
       listedCount: null,
       totalAmount: null
     })
+    const autoUpdateInterval = ref(null)
+    const lastUpdateTime = ref(null)
 
     // 獲取熱門股票
     const fetchHotStocks = async () => {
@@ -166,6 +171,23 @@ export default {
         }
       } catch (error) {
         console.error('獲取熱門股票失敗:', error)
+      }
+    }
+
+    // 開始自動更新
+    const startAutoUpdate = () => {
+      // 每20秒更新一次
+      autoUpdateInterval.value = setInterval(() => {
+        fetchHotStocks()
+        fetchMarketData()
+      }, 20000)
+    }
+
+    // 停止自動更新
+    const stopAutoUpdate = () => {
+      if (autoUpdateInterval.value) {
+        clearInterval(autoUpdateInterval.value)
+        autoUpdateInterval.value = null
       }
     }
 
@@ -185,6 +207,7 @@ export default {
             listedCount: data.data.total_count,
             totalAmount: data.data.total_amount
           }
+          lastUpdateTime.value = new Date()
         }
       } catch (error) {
         console.error('獲取市場數據失敗:', error)
@@ -204,7 +227,7 @@ export default {
 
     // 格式化價格
     const formatPrice = (price) => {
-      if (price === null || price === undefined) return '--'
+      if (price === null || price === undefined || price === 0) return '--'
       return Number(price).toFixed(2)
     }
 
@@ -234,7 +257,7 @@ export default {
 
     // 跳轉到股票詳情
     const goToStockDetail = (code) => {
-      router.push(`/stocks?code=${code}`)
+      router.push(`/stock/${code}`)
     }
 
     // 回首頁
@@ -245,11 +268,18 @@ export default {
     onMounted(() => {
       fetchHotStocks()
       fetchMarketData()
+      startAutoUpdate()
+    })
+
+    // 組件卸載時停止自動更新
+    onUnmounted(() => {
+      stopAutoUpdate()
     })
 
     return {
       hotStocks,
       marketData,
+      lastUpdateTime,
       formatPrice,
       formatIndex,
       formatChange,
