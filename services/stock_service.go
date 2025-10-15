@@ -655,7 +655,7 @@ func (t *TSEAPIService) FetchStockData(codes []string) ([]TSEStockData, error) {
 
 // ParseFloat 安全解析浮點數
 func (t *TSEAPIService) ParseFloat(s string) float64 {
-	if s == "" || s == "--" {
+	if s == "" || s == "--" || s == "-" {
 		return 0
 	}
 	f, _ := strconv.ParseFloat(s, 64)
@@ -675,9 +675,19 @@ func (t *TSEAPIService) ParseInt64(s string) int64 {
 func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 	tse := NewTSEAPIService()
 	
-	// 計算漲跌點數和漲跌幅
+	// 獲取價格數據
 	currentPrice := tse.ParseFloat(tseData.Price)
 	prevClose := tse.ParseFloat(tseData.ClosePrice)
+	openPrice := tse.ParseFloat(tseData.OpenPrice)
+	highPrice := tse.ParseFloat(tseData.HighPrice)
+	lowPrice := tse.ParseFloat(tseData.LowPrice)
+	
+	// 如果現價為空或無效，使用昨收價作為當前價格
+	if currentPrice == 0 && prevClose > 0 {
+		currentPrice = prevClose
+	}
+	
+	// 計算漲跌點數和漲跌幅
 	change := currentPrice - prevClose
 	var changePercent float64
 	if prevClose > 0 {
@@ -687,9 +697,9 @@ func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 	return &models.StockPrice{
 		StockCode:     tseData.Code,
 		Price:         currentPrice,
-		OpenPrice:     tse.ParseFloat(tseData.OpenPrice),
-		HighPrice:     tse.ParseFloat(tseData.HighPrice),
-		LowPrice:      tse.ParseFloat(tseData.LowPrice),
+		OpenPrice:     openPrice,
+		HighPrice:     highPrice,
+		LowPrice:      lowPrice,
 		ClosePrice:    prevClose,
 		Volume:        tse.ParseInt64(tseData.Volume),
 		Amount:        tse.ParseFloat(tseData.Amount),
