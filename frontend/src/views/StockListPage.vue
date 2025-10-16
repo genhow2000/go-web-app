@@ -265,11 +265,34 @@ export default {
         stocks.value = data.stocks || []
         pagination.value = data.pagination || pagination.value
         lastUpdateTime.value = new Date()
+        
+        // 如果沒有股票價格數據，自動觸發更新
+        if (stocks.value.length > 0 && !stocks.value[0].price) {
+          console.log('檢測到沒有股票價格數據，自動觸發更新...')
+          await triggerStockUpdate()
+          // 更新後重新載入數據
+          const retryResponse = await api.get('/api/stock/stocks', { params })
+          const retryData = retryResponse.data.data
+          stocks.value = retryData.stocks || []
+          pagination.value = retryData.pagination || pagination.value
+        }
       } catch (error) {
         console.error('載入股票列表失敗:', error)
         stocks.value = []
       } finally {
         loading.value = false
+      }
+    }
+
+    // 觸發股票更新
+    const triggerStockUpdate = async () => {
+      try {
+        const response = await api.post('/api/stock/force-update-prices')
+        if (response.data.success) {
+          console.log('股票數據更新成功')
+        }
+      } catch (error) {
+        console.error('觸發股票更新失敗:', error)
       }
     }
 

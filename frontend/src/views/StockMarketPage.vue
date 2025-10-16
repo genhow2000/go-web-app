@@ -168,9 +168,39 @@ export default {
         const data = await response.json()
         if (data.success) {
           hotStocks.value = data.data.stocks
+          
+          // 如果沒有股票數據，自動觸發更新
+          if (!hotStocks.value || hotStocks.value.length === 0 || !hotStocks.value[0].price) {
+            console.log('檢測到沒有股票數據，自動觸發更新...')
+            await triggerStockUpdate()
+            // 更新後重新獲取數據
+            const retryResponse = await fetch('/api/stock/stocks?page=1&limit=8&sort_by=volume&sort_order=desc')
+            const retryData = await retryResponse.json()
+            if (retryData.success) {
+              hotStocks.value = retryData.data.stocks
+            }
+          }
         }
       } catch (error) {
         console.error('獲取熱門股票失敗:', error)
+      }
+    }
+
+    // 觸發股票更新
+    const triggerStockUpdate = async () => {
+      try {
+        const response = await fetch('/api/stock/force-update-prices', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        const data = await response.json()
+        if (data.success) {
+          console.log('股票數據更新成功')
+        }
+      } catch (error) {
+        console.error('觸發股票更新失敗:', error)
       }
     }
 
