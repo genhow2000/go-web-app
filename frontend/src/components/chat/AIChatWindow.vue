@@ -33,8 +33,7 @@
       >
         <div class="message-content">
           <span v-if="message.role === 'system'" class="error-icon">
-            <span v-if="message.errorType === 'database_error'">🗄️</span>
-            <span v-else-if="message.errorType === 'api_error'">🔌</span>
+            <span v-if="message.errorType === 'api_error'">🔌</span>
             <span v-else-if="message.errorType === 'quota_exceeded'">⚠️</span>
             <span v-else-if="message.errorType === 'rate_limited'">⏰</span>
             <span v-else>⚠️</span>
@@ -661,11 +660,16 @@ export default {
 /* 響應式設計 */
 @media (max-width: 768px) {
   .ai-chat-window {
-    width: 95vw;
+    width: calc(100vw - 40px);
     height: 80vh;
-    top: 10vh;
+    max-height: 600px;
+    min-height: 400px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
+    margin: 0 20px;
+    position: fixed;
+    z-index: 1001;
   }
   
   .question-buttons {
@@ -678,21 +682,35 @@ export default {
   }
 }
 
+/* 小屏幕手機優化 */
+@media (max-width: 480px) {
+  .ai-chat-window {
+    width: calc(100vw - 20px);
+    height: 85vh;
+    max-height: 500px;
+    margin: 0 10px;
+  }
+  
+  .chat-header h3 {
+    font-size: 14px;
+  }
+  
+  .chat-messages {
+    padding: 15px;
+  }
+  
+  .message-content {
+    max-width: 85%;
+    font-size: 13px;
+  }
+}
+
 @keyframes typing {
   0%, 60%, 100% {
     transform: translateY(0);
   }
   30% {
     transform: translateY(-10px);
-  }
-}
-
-@media (max-width: 768px) {
-  .ai-chat-window {
-    width: calc(100vw - 40px);
-    left: 20px;
-    right: 20px;
-    height: 400px;
   }
 }
 </style>

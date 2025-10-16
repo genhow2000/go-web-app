@@ -150,9 +150,9 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 			// 如果AI服務也失敗，使用模拟模式
 			aiResponse = cc.getFallbackResponse(req.Message)
 		} else {
-			// MongoDB不可用但AI服務正常
-			apiErrorMsg = "資料庫連線異常，AI服務暫時使用模擬模式"
-			errorType = "database_error"
+			// MongoDB不可用但AI服務正常，不顯示警告訊息
+			// apiErrorMsg = "資料庫連線異常，AI服務暫時使用模擬模式"
+			// errorType = "database_error"
 		}
 		
 		// 返回响应
