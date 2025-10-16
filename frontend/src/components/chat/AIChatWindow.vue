@@ -2,8 +2,11 @@
   <div class="ai-chat-window show">
     <div class="chat-header">
       <div>
-        <h3>AI 購物助手</h3>
+        <h3>{{ getChatTitle() }}</h3>
         <div class="status">在線</div>
+        <div v-if="stockContext" class="stock-context">
+          正在分析：{{ stockContext.name }} ({{ stockContext.code }})
+        </div>
       </div>
       <button class="chat-close" @click="$emit('close')">×</button>
     </div>
@@ -11,7 +14,7 @@
     <div class="chat-messages" ref="messagesContainer">
       <div class="message assistant">
         <div class="message-content">
-          您好！我是阿和商城的AI購物助手，有什麼可以幫助您的嗎？
+          {{ getWelcomeMessage() }}
         </div>
         <div class="message-time">{{ getCurrentTime() }}</div>
       </div>
@@ -20,9 +23,24 @@
         v-for="message in messages" 
         :key="message.id"
         class="message"
-        :class="message.role"
+        :class="{ 
+          'user': message.role === 'user',
+          'assistant': message.role === 'assistant',
+          'system': message.role === 'system',
+          'error': message.isError,
+          'warning': message.isWarning
+        }"
       >
-        <div class="message-content">{{ message.content }}</div>
+        <div class="message-content">
+          <span v-if="message.role === 'system'" class="error-icon">
+            <span v-if="message.errorType === 'database_error'">🗄️</span>
+            <span v-else-if="message.errorType === 'api_error'">🔌</span>
+            <span v-else-if="message.errorType === 'quota_exceeded'">⚠️</span>
+            <span v-else-if="message.errorType === 'rate_limited'">⏰</span>
+            <span v-else>⚠️</span>
+          </span>
+          {{ message.content }}
+        </div>
         <div class="message-time">{{ message.time }}</div>
       </div>
     </div>
@@ -36,12 +54,31 @@
       </div>
     </div>
     
+    <!-- 股票相關預設問題 -->
+    <div v-if="stockContext && messages.length === 0" class="quick-questions">
+      <h4>快速提問：</h4>
+      <div class="question-buttons">
+        <button @click="askQuestion('這支股票值得買嗎？')" class="question-btn">
+          這支股票值得買嗎？
+        </button>
+        <button @click="askQuestion('分析這支股票的技術指標')" class="question-btn">
+          分析技術指標
+        </button>
+        <button @click="askQuestion('這支股票的投資風險如何？')" class="question-btn">
+          投資風險分析
+        </button>
+        <button @click="askQuestion('這支股票的基本面如何？')" class="question-btn">
+          基本面分析
+        </button>
+      </div>
+    </div>
+
     <div class="chat-input-container">
       <div class="chat-input-wrapper">
         <textarea 
           v-model="inputMessage"
           class="chat-input" 
-          placeholder="輸入您的問題..."
+          :placeholder="getInputPlaceholder()"
           rows="1"
           @keypress.enter.prevent="sendMessage"
           @input="autoResize"
@@ -65,8 +102,14 @@ import api from '@/services/api'
 
 export default {
   name: 'AIChatWindow',
+  props: {
+    stockContext: {
+      type: Object,
+      default: null
+    }
+  },
   emits: ['close'],
-  setup() {
+  setup(props) {
     const inputMessage = ref('')
     const messages = ref([])
     const isTyping = ref(false)
@@ -74,6 +117,34 @@ export default {
     const messagesContainer = ref(null)
     const inputRef = ref(null)
     const conversationId = ref(null)
+
+    // 獲取聊天標題
+    const getChatTitle = () => {
+      return props.stockContext ? 'AI 股票助手' : 'AI 購物助手'
+    }
+
+    // 獲取歡迎訊息
+    const getWelcomeMessage = () => {
+      console.log('getWelcomeMessage - 股票上下文:', props.stockContext)
+      if (props.stockContext) {
+        return `您好！我是AI股票助手，正在為您分析 ${props.stockContext.name} (${props.stockContext.code})。我可以幫您分析這支股票的投資價值、技術指標、風險評估等。有什麼問題可以問我！`
+      }
+      return '您好！我是阿和商城的AI購物助手，有什麼可以幫助您的嗎？'
+    }
+
+    // 獲取輸入框提示文字
+    const getInputPlaceholder = () => {
+      if (props.stockContext) {
+        return `詢問關於 ${props.stockContext.name} 的問題...`
+      }
+      return '輸入您的問題...'
+    }
+
+    // 快速提問
+    const askQuestion = (question) => {
+      inputMessage.value = question
+      sendMessage()
+    }
 
     // 獲取當前時間
     const getCurrentTime = () => {
@@ -142,11 +213,29 @@ export default {
           conversationId.value = await createConversation()
         }
 
-        // 發送消息到後端
-        const response = await api.post('/api/chat/send', {
+        // 準備發送的消息
+        const messageData = {
           conversation_id: conversationId.value,
           message: message
-        })
+        }
+        
+        // 如果有股票上下文，只傳遞簡短的關鍵資訊
+        if (props.stockContext) {
+          console.log('股票上下文:', props.stockContext)
+          messageData.stock_context = {
+            code: props.stockContext.code,
+            name: props.stockContext.name,
+            current_price: props.stockContext.price?.price || 0,
+            change: props.stockContext.price?.change || 0,
+            market: props.stockContext.market
+          }
+          console.log('發送的股票上下文:', messageData.stock_context)
+        } else {
+          console.log('沒有股票上下文')
+        }
+
+        // 發送消息到後端
+        const response = await api.post('/api/chat/send', messageData)
 
         if (response.data.success) {
           // 添加AI回復
@@ -158,6 +247,45 @@ export default {
               time: getCurrentTime()
             }
             messages.value.push(aiMessage)
+            
+            // 檢查是否有API錯誤或使用上限提醒
+            if (response.data.api_error) {
+              const errorMessage = {
+                id: Date.now() + 2,
+                role: 'system',
+                content: response.data.api_error,
+                time: getCurrentTime(),
+                isError: true,
+                errorType: response.data.error_type || 'api_error'
+              }
+              messages.value.push(errorMessage)
+            }
+            
+            // 檢查使用統計和警告
+            if (response.data.usage_stats) {
+              const dailyCount = response.data.usage_stats.daily_requests || 0
+              const dailyLimit = response.data.usage_stats.daily_limit || 0
+              
+              if (dailyCount >= dailyLimit) {
+                const limitMessage = {
+                  id: Date.now() + 3,
+                  role: 'system',
+                  content: '您今日的使用次數已達上限，請登入會員以提高使用限制',
+                  time: getCurrentTime(),
+                  isWarning: true
+                }
+                messages.value.push(limitMessage)
+              } else if (response.data.warning) {
+                const warningMessage = {
+                  id: Date.now() + 3,
+                  role: 'system',
+                  content: response.data.warning,
+                  time: getCurrentTime(),
+                  isWarning: true
+                }
+                messages.value.push(warningMessage)
+              }
+            }
           } else {
             // 降級到模擬AI回復
             setTimeout(() => {
@@ -226,6 +354,10 @@ export default {
       isSending,
       messagesContainer,
       inputRef,
+      getChatTitle,
+      getWelcomeMessage,
+      getInputPlaceholder,
+      askQuestion,
       getCurrentTime,
       autoResize,
       sendMessage
@@ -237,13 +369,15 @@ export default {
 <style scoped>
 .ai-chat-window {
   position: fixed;
-  bottom: 90px;
-  left: 20px;
-  width: 350px;
-  height: 500px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  max-height: 80vh;
+  min-height: 500px;
   background: white;
   border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -283,6 +417,17 @@ export default {
   opacity: 0.9;
 }
 
+.stock-context {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 12px;
+  display: inline-block;
+}
+
 .chat-close {
   background: none;
   border: none;
@@ -308,6 +453,8 @@ export default {
   padding: 20px;
   overflow-y: auto;
   background: #f8f9fa;
+  max-height: none;
+  min-height: 0;
 }
 
 .message {
@@ -330,6 +477,9 @@ export default {
   border-radius: 18px;
   font-size: 14px;
   line-height: 1.4;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .message.user .message-content {
@@ -345,6 +495,38 @@ export default {
   border-bottom-left-radius: 5px;
 }
 
+.message.system {
+  justify-content: center;
+  margin: 10px 20%;
+}
+
+.message.system .message-content {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+  max-width: 100%;
+}
+
+.message.error .message-content {
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+.message.warning .message-content {
+  background: #fff3cd;
+  color: #856404;
+  border-color: #ffeaa7;
+}
+
+.error-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
 .message-time {
   font-size: 11px;
   color: #999;
@@ -354,6 +536,45 @@ export default {
 
 .message.assistant .message-time {
   text-align: left;
+}
+
+/* 快速問題區域 */
+.quick-questions {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e2e8f0;
+}
+
+.quick-questions h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.question-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.question-btn {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  color: #4a5568;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.question-btn:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: translateY(-1px);
 }
 
 .chat-input-container {
@@ -435,6 +656,26 @@ export default {
 
 .typing-dot:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .ai-chat-window {
+    width: 95vw;
+    height: 80vh;
+    top: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .question-buttons {
+    flex-direction: column;
+  }
+  
+  .question-btn {
+    text-align: center;
+    white-space: normal;
+  }
 }
 
 @keyframes typing {

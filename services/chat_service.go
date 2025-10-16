@@ -325,14 +325,65 @@ func (s *ChatService) GetDatabaseSize() (int64, error) {
 }
 
 // GenerateAIResponse 生成AI回复
-func (s *ChatService) GenerateAIResponse(message, conversationID string) (string, error) {
+func (s *ChatService) GenerateAIResponse(message, conversationID string, stockContext map[string]interface{}) (string, error) {
+	// 如果有股票上下文，構建更豐富的上下文信息
+	enhancedContext := s.buildEnhancedStockContext(stockContext)
+	
 	// 使用AI管理器生成回复
 	if s.aiManager != nil {
 		ctx := context.Background()
-		return s.aiManager.GenerateResponse(ctx, message, conversationID)
+		return s.aiManager.GenerateResponse(ctx, message, conversationID, enhancedContext)
 	}
 	// 如果AI管理器未初始化，返回模拟回复
 	return s.getSimulatedAIResponse(message), nil
+}
+
+// buildEnhancedStockContext 構建增強的股票上下文
+func (s *ChatService) buildEnhancedStockContext(stockContext map[string]interface{}) map[string]interface{} {
+	if stockContext == nil {
+		return nil
+	}
+	
+	// 複製原始上下文
+	enhanced := make(map[string]interface{})
+	for k, v := range stockContext {
+		enhanced[k] = v
+	}
+	
+	// 添加查詢歷史數據的指令
+	enhanced["query_instructions"] = map[string]interface{}{
+		"should_query_history": true,
+		"query_periods": []string{
+			"最近1週的股價走勢",
+			"最近1個月的股價表現", 
+			"最近3個月的技術指標變化",
+			"最近1年的股價波動範圍",
+		},
+		"analysis_focus": []string{
+			"技術指標分析（RSI、MACD、KD、移動平均線）",
+			"支撐位和阻力位分析",
+			"成交量變化趨勢",
+			"股價波動性分析",
+		},
+		"context_note": "請基於查詢到的歷史數據進行深入分析，提供專業的投資建議和風險評估。",
+	}
+	
+	return enhanced
+}
+
+// extractStockInfo 提取股票基本資訊
+func extractStockInfo(stockContext map[string]interface{}) (code, name, market string, currentPrice, change float64) {
+	if stockContext == nil {
+		return "", "", "", 0, 0
+	}
+	
+	code, _ = stockContext["code"].(string)
+	name, _ = stockContext["name"].(string)
+	market, _ = stockContext["market"].(string)
+	currentPrice, _ = stockContext["current_price"].(float64)
+	change, _ = stockContext["change"].(float64)
+	
+	return
 }
 
 // getSimulatedAIResponse 获取模拟AI回复

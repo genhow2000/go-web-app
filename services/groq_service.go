@@ -39,7 +39,7 @@ func NewGroqService(cfg config.GroqConfig) *GroqService {
 }
 
 // GenerateResponse 生成回复
-func (s *GroqService) GenerateResponse(ctx context.Context, message, conversationID string) (string, error) {
+func (s *GroqService) GenerateResponse(ctx context.Context, message, conversationID string, stockContext map[string]interface{}) (string, error) {
 	// 检查是否超出限制
 	if s.usageStats.IsExhausted {
 		return "", &AIError{
@@ -49,13 +49,16 @@ func (s *GroqService) GenerateResponse(ctx context.Context, message, conversatio
 		}
 	}
 
+	// 构建消息内容，包含增強的股票上下文
+	content := s.buildEnhancedPrompt(message, stockContext)
+
 	// 构建请求
 	requestBody := map[string]interface{}{
 		"model": s.config.Model,
 		"messages": []map[string]string{
 			{
 				"role":    "user",
-				"content": message,
+				"content": content,
 			},
 		},
 		"max_tokens":   s.config.MaxTokens,
@@ -193,4 +196,47 @@ func (s *GroqService) GetUsageStats() map[string]interface{} {
 		"last_used":       s.usageStats.LastUsed,
 		"usage_percentage": float64(s.usageStats.DailyUsage) / float64(s.usageStats.DailyLimit) * 100,
 	}
+}
+
+// buildEnhancedPrompt 構建增強的提示詞
+func (s *GroqService) buildEnhancedPrompt(message string, stockContext map[string]interface{}) string {
+	if stockContext == nil {
+		return message
+	}
+	
+	// 提取股票基本資訊
+	code, name, market, currentPrice, change := extractStockInfo(stockContext)
+	
+	// 構建股票資訊字串
+	stockInfo := fmt.Sprintf("股票代碼: %s (%s)", code, name)
+	if currentPrice > 0 {
+		stockInfo += fmt.Sprintf(" 現價: %.2f", currentPrice)
+	}
+	if change != 0 {
+		stockInfo += fmt.Sprintf(" 漲跌: %.2f", change)
+	}
+	if market != "" {
+		stockInfo += fmt.Sprintf(" (%s)", market)
+	}
+	
+	// 檢查是否有查詢指令
+	queryInstructions, hasInstructions := stockContext["query_instructions"].(map[string]interface{})
+	
+	// 構建簡化的提示詞
+	prompt := fmt.Sprintf("你是專業股票分析師。分析股票：%s\n\n", stockInfo)
+	
+	if hasInstructions {
+		shouldQuery, _ := queryInstructions["should_query_history"].(bool)
+		if shouldQuery {
+			prompt += "請模擬搜尋台灣證交所、Yahoo Finance等資料源，提供：\n"
+			prompt += "• 技術指標分析（RSI、MACD、KD、移動平均線）\n"
+			prompt += "• 支撐位和阻力位分析\n"
+			prompt += "• 投資風險評估和建議\n"
+			prompt += "• 包含免責聲明\n\n"
+		}
+	}
+	
+	prompt += fmt.Sprintf("問題：%s", message)
+	
+	return prompt
 }

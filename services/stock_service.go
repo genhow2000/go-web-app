@@ -658,9 +658,9 @@ func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 	}
 }
 
-// StartAutoUpdate 開始自動更新股票價格（每30秒）
+// StartAutoUpdate 開始自動更新股票價格（僅交易時間）
 func (s *StockService) StartAutoUpdate() {
-	s.ticker = time.NewTicker(30 * time.Second)
+	s.ticker = time.NewTicker(60 * time.Second)
 	
 	go func() {
 		for {
@@ -669,7 +669,7 @@ func (s *StockService) StartAutoUpdate() {
 				// 檢查是否在交易時間內（週一至週五 9:00-13:30）
 				now := time.Now()
 				if s.isTradingTime(now) {
-					fmt.Println("開始自動更新股票價格...")
+					fmt.Println("開始自動更新股票價格（交易時間）...")
 					err := s.UpdateStockPricesFromTSE()
 					if err != nil {
 						fmt.Printf("自動更新股票價格失敗: %v\n", err)
@@ -677,7 +677,7 @@ func (s *StockService) StartAutoUpdate() {
 						fmt.Println("股票價格更新完成")
 					}
 				} else {
-					fmt.Println("非交易時間，跳過更新")
+					fmt.Println("非交易時間，跳過自動更新")
 				}
 			case <-s.stopChan:
 				fmt.Println("停止自動更新股票價格")
@@ -686,7 +686,7 @@ func (s *StockService) StartAutoUpdate() {
 		}
 	}()
 	
-	fmt.Println("股票價格自動更新已啟動（每30秒，僅交易時間）")
+	fmt.Println("股票價格自動更新已啟動（每60秒，僅交易時間）")
 }
 
 // isTradingTime 檢查是否在交易時間內

@@ -27,8 +27,9 @@ type Conversation struct {
 
 // ChatRequest 表示发送消息的请求
 type ChatRequest struct {
-	ConversationID string `json:"conversation_id" binding:"required"`
-	Message        string `json:"message" binding:"required"`
+	ConversationID string                 `json:"conversation_id" binding:"required"`
+	Message        string                 `json:"message" binding:"required"`
+	StockContext   map[string]interface{} `json:"stock_context,omitempty"`
 }
 
 // ChatResponse 表示聊天响应

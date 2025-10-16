@@ -39,7 +39,7 @@ func NewGeminiService(cfg config.GeminiConfig) *GeminiService {
 }
 
 // GenerateResponse 生成回复
-func (s *GeminiService) GenerateResponse(ctx context.Context, message, conversationID string) (string, error) {
+func (s *GeminiService) GenerateResponse(ctx context.Context, message, conversationID string, stockContext map[string]interface{}) (string, error) {
 	// 检查是否超出限制
 	if s.usageStats.IsExhausted {
 		return "", &AIError{
@@ -49,13 +49,38 @@ func (s *GeminiService) GenerateResponse(ctx context.Context, message, conversat
 		}
 	}
 
+	// 构建消息内容，包含簡化的股票上下文
+	content := message
+	if stockContext != nil {
+		stockInfo := ""
+		if code, ok := stockContext["code"].(string); ok {
+			stockInfo += fmt.Sprintf("股票代碼: %s", code)
+		}
+		if name, ok := stockContext["name"].(string); ok {
+			stockInfo += fmt.Sprintf(" (%s)", name)
+		}
+		if currentPrice, ok := stockContext["current_price"].(float64); ok && currentPrice > 0 {
+			stockInfo += fmt.Sprintf(" 現價: %.2f", currentPrice)
+		}
+		if change, ok := stockContext["change"].(float64); ok {
+			stockInfo += fmt.Sprintf(" 漲跌: %.2f", change)
+		}
+		if market, ok := stockContext["market"].(string); ok {
+			stockInfo += fmt.Sprintf(" (%s)", market)
+		}
+		
+		if stockInfo != "" {
+			content = fmt.Sprintf("股票: %s\n問題: %s", stockInfo, message)
+		}
+	}
+
 	// 构建请求
 	requestBody := map[string]interface{}{
 		"contents": []map[string]interface{}{
 			{
 				"parts": []map[string]string{
 					{
-						"text": message,
+						"text": content,
 					},
 				},
 			},

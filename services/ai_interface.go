@@ -8,7 +8,7 @@ import (
 // AIService 定义AI服务的通用接口
 type AIService interface {
 	// GenerateResponse 生成AI回复
-	GenerateResponse(ctx context.Context, message, conversationID string) (string, error)
+	GenerateResponse(ctx context.Context, message, conversationID string, stockContext map[string]interface{}) (string, error)
 	
 	// GetServiceName 获取服务名称
 	GetServiceName() string

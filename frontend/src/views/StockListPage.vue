@@ -185,6 +185,7 @@
         <span class="stats-value">{{ lastUpdateTime.toLocaleString() }}</span>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -296,12 +297,30 @@ export default {
       }
     }
 
+    // 檢查是否為交易時間
+    const isTradingTime = () => {
+      const now = new Date()
+      const taiwanTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)) // UTC+8
+      const weekday = taiwanTime.getDay()
+      const hour = taiwanTime.getHours()
+      const minute = taiwanTime.getMinutes()
+      
+      // 週一至週五 9:00-13:30
+      if (weekday >= 1 && weekday <= 5) {
+        if (hour >= 9 && hour < 13) return true
+        if (hour === 13 && minute <= 30) return true
+      }
+      return false
+    }
+
     // 開始自動更新
     const startAutoUpdate = () => {
-      // 每15秒更新一次
+      // 每30秒更新一次（僅在交易時間）
       autoUpdateInterval.value = setInterval(() => {
-        loadStocks(false) // 不顯示loading
-      }, 15000)
+        if (isTradingTime()) {
+          loadStocks(false) // 不顯示loading
+        }
+      }, 30000)
     }
 
     // 停止自動更新
@@ -363,6 +382,7 @@ export default {
     const goToStockMarket = () => {
       router.push('/stock-market')
     }
+
 
     // 格式化函數
     const formatPrice = (price) => {
@@ -841,6 +861,55 @@ export default {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+  }
+}
+
+/* AI 股票助手按鈕 */
+.ai-stock-chat-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ai-stock-chat-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+}
+
+.ai-btn-text {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .ai-stock-chat-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .ai-btn-text {
+    font-size: 8px;
   }
 }
 </style>

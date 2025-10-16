@@ -123,10 +123,36 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 	// 检查MongoDB是否可用
 	if !database.IsMongoDBConnected() {
 		// MongoDB不可用，但嘗試使用真正的AI服務
-		aiResponse, err := cc.chatService.GenerateAIResponse(req.Message, req.ConversationID)
+		aiResponse, err := cc.chatService.GenerateAIResponse(req.Message, req.ConversationID, req.StockContext)
+		var apiErrorMsg string
+		var errorType string
+		
 		if err != nil {
+			// 检查是否是API相关错误
+			if aiErr, ok := err.(*services.AIError); ok {
+				if aiErr.IsQuotaExceededError() {
+					apiErrorMsg = "AI服務使用次數已達上限，請登入會員以提高使用限制"
+					errorType = "quota_exceeded"
+				} else if aiErr.IsRateLimitedError() {
+					apiErrorMsg = "AI服務暫時繁忙，請稍後再試"
+					errorType = "rate_limited"
+				} else if aiErr.IsNetworkErrorType() {
+					apiErrorMsg = "串接機器人API目前異常，請稍後再試"
+					errorType = "api_error"
+				} else {
+					apiErrorMsg = "串接機器人API目前異常，請稍後再試"
+					errorType = "api_error"
+				}
+			} else {
+				apiErrorMsg = "串接機器人API目前異常，請稍後再試"
+				errorType = "api_error"
+			}
 			// 如果AI服務也失敗，使用模拟模式
 			aiResponse = cc.getFallbackResponse(req.Message)
+		} else {
+			// MongoDB不可用但AI服務正常
+			apiErrorMsg = "資料庫連線異常，AI服務暫時使用模擬模式"
+			errorType = "database_error"
 		}
 		
 		// 返回响应
@@ -146,6 +172,10 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 			"is_anonymous": isAnonymous,
 			"simulation_mode": !database.IsMongoDBConnected(),
 		}
+		
+		// 添加錯誤信息
+		responseData["api_error"] = apiErrorMsg
+		responseData["error_type"] = errorType
 
 		// 如果是匿名用户，添加使用统计
 		if isAnonymous {
@@ -186,9 +216,37 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 		return
 	}
 
+	// 记录股票上下文信息
+	// if req.StockContext != nil {
+	// 	log.Printf("收到股票上下文: %+v", req.StockContext)
+	// } else {
+	// 	log.Printf("未收到股票上下文")
+	// }
+
 	// 调用AI服务生成回复
-	aiResponse, err := cc.chatService.GenerateAIResponse(req.Message, req.ConversationID)
+	aiResponse, err := cc.chatService.GenerateAIResponse(req.Message, req.ConversationID, req.StockContext)
+	var apiErrorMsg string
+	var errorType string
 	if err != nil {
+		// 检查是否是API相关错误
+		if aiErr, ok := err.(*services.AIError); ok {
+			if aiErr.IsQuotaExceededError() {
+				apiErrorMsg = "AI服務使用次數已達上限，請登入會員以提高使用限制"
+				errorType = "quota_exceeded"
+			} else if aiErr.IsRateLimitedError() {
+				apiErrorMsg = "AI服務暫時繁忙，請稍後再試"
+				errorType = "rate_limited"
+			} else if aiErr.IsNetworkErrorType() {
+				apiErrorMsg = "串接機器人API目前異常，請稍後再試"
+				errorType = "api_error"
+			} else {
+				apiErrorMsg = "串接機器人API目前異常，請稍後再試"
+				errorType = "api_error"
+			}
+		} else {
+			apiErrorMsg = "串接機器人API目前異常，請稍後再試"
+			errorType = "api_error"
+		}
 		// 如果AI服务失败，返回模拟回复
 		aiResponse = cc.getFallbackResponse(req.Message)
 	}
@@ -217,6 +275,13 @@ func (cc *ChatController) SendMessage(c *gin.Context) {
 		"user_message": response.Message,
 		"ai_message": aiMessage.Message,
 		"is_anonymous": isAnonymous,
+	}
+	
+	// 如果有API錯誤，添加錯誤信息
+	if apiErrorMsg != "" {
+		responseData["api_error"] = apiErrorMsg
+		responseData["error_type"] = errorType
+		responseData["simulation_mode"] = true
 	}
 
 	// 如果是匿名用户，添加使用统计

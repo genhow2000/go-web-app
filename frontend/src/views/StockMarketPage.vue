@@ -204,13 +204,31 @@ export default {
       }
     }
 
+    // 檢查是否為交易時間
+    const isTradingTime = () => {
+      const now = new Date()
+      const taiwanTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)) // UTC+8
+      const weekday = taiwanTime.getDay()
+      const hour = taiwanTime.getHours()
+      const minute = taiwanTime.getMinutes()
+      
+      // 週一至週五 9:00-13:30
+      if (weekday >= 1 && weekday <= 5) {
+        if (hour >= 9 && hour < 13) return true
+        if (hour === 13 && minute <= 30) return true
+      }
+      return false
+    }
+
     // 開始自動更新
     const startAutoUpdate = () => {
-      // 每20秒更新一次
+      // 每30秒更新一次（僅在交易時間）
       autoUpdateInterval.value = setInterval(() => {
-        fetchHotStocks()
-        fetchMarketData()
-      }, 20000)
+        if (isTradingTime()) {
+          fetchHotStocks()
+          fetchMarketData()
+        }
+      }, 30000)
     }
 
     // 停止自動更新

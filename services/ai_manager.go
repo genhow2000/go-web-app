@@ -51,11 +51,11 @@ func (m *AIManager) initializeServices() {
 }
 
 // GenerateResponse 生成AI回复
-func (m *AIManager) GenerateResponse(ctx context.Context, message, conversationID string) (string, error) {
+func (m *AIManager) GenerateResponse(ctx context.Context, message, conversationID string, stockContext map[string]interface{}) (string, error) {
 	// 尝试主要服务
 	primaryService := m.getPrimaryService(ctx)
 	if primaryService != nil {
-		response, err := primaryService.GenerateResponse(ctx, message, conversationID)
+		response, err := primaryService.GenerateResponse(ctx, message, conversationID, stockContext)
 		if err == nil {
 			log.Printf("Generated response using %s API", primaryService.GetServiceName())
 			return response, nil
@@ -68,7 +68,7 @@ func (m *AIManager) GenerateResponse(ctx context.Context, message, conversationI
 		backupService := m.getBackupService(ctx)
 		if backupService != nil {
 			log.Printf("Trying backup service: %s", backupService.GetServiceName())
-			response, err := backupService.GenerateResponse(ctx, message, conversationID)
+			response, err := backupService.GenerateResponse(ctx, message, conversationID, stockContext)
 			if err == nil {
 				log.Printf("Generated response using %s API", backupService.GetServiceName())
 				return response, nil
@@ -82,7 +82,7 @@ func (m *AIManager) GenerateResponse(ctx context.Context, message, conversationI
 	// 最后使用模拟服务
 	if simulationService, exists := m.services["simulation"]; exists {
 		log.Printf("Using simulation service as fallback")
-		return simulationService.GenerateResponse(ctx, message, conversationID)
+		return simulationService.GenerateResponse(ctx, message, conversationID, stockContext)
 	}
 
 	return "", fmt.Errorf("no available service")

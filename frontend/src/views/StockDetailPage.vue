@@ -159,6 +159,19 @@
       <p>找不到指定的股票資訊</p>
       <button @click="goBack" class="back-btn">返回列表</button>
     </div>
+
+    <!-- AI 股票助手按鈕 -->
+    <button class="ai-stock-chat-btn" @click="toggleStockChatWindow" title="AI 股票助手">
+      🤖
+      <span class="ai-btn-text">AI助手</span>
+    </button>
+
+    <!-- AI 股票聊天窗口 -->
+    <AIChatWindow 
+      v-if="showStockChatWindow"
+      @close="toggleStockChatWindow"
+      :stock-context="stock && stock.code ? stock : null"
+    />
   </div>
 </template>
 
@@ -166,9 +179,13 @@
 import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
+import AIChatWindow from '@/components/chat/AIChatWindow.vue'
 
 export default {
   name: 'StockDetailPage',
+  components: {
+    AIChatWindow
+  },
   setup() {
     const route = useRoute()
     const router = useRouter()
@@ -180,6 +197,7 @@ export default {
     const categories = ref([])
     const autoUpdateInterval = ref(null)
     const lastUpdateTime = ref(null)
+    const showStockChatWindow = ref(false)
 
     // 圖表週期選項
     const chartPeriods = ref([
@@ -244,6 +262,11 @@ export default {
     // 返回列表
     const goBack = () => {
       router.push('/stocks')
+    }
+
+    // 切換AI聊天窗口
+    const toggleStockChatWindow = () => {
+      showStockChatWindow.value = !showStockChatWindow.value
     }
 
     // 格式化函數
@@ -323,8 +346,10 @@ export default {
       selectedPeriod,
       chartPeriods,
       lastUpdateTime,
+      showStockChatWindow,
       loadStockDetail,
       goBack,
+      toggleStockChatWindow,
       formatPrice,
       formatChange,
       formatPercent,
@@ -738,5 +763,54 @@ export default {
 .back-icon {
   font-size: 1.1rem;
   font-weight: bold;
+}
+
+/* AI 股票助手按鈕 */
+.ai-stock-chat-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ai-stock-chat-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+}
+
+.ai-btn-text {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .ai-stock-chat-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .ai-btn-text {
+    font-size: 8px;
+  }
 }
 </style>
