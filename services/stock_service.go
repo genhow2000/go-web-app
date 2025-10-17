@@ -436,8 +436,6 @@ func (s *StockService) UpdateStockPricesFromTSEWithForce(forceUpdate bool) error
 		return nil
 	}
 	
-	fmt.Println("開始從台灣證交所更新股票價格...")
-	
 	// 獲取所有股票代碼
 	filter := models.StockFilter{}
 	pagination := models.Pagination{
@@ -449,7 +447,7 @@ func (s *StockService) UpdateStockPricesFromTSEWithForce(forceUpdate bool) error
 		return fmt.Errorf("獲取股票列表失敗: %w", err)
 	}
 	
-	fmt.Printf("找到 %d 支股票需要更新\n", len(stocks))
+	fmt.Printf("開始更新 %d 支股票價格...\n", len(stocks))
 	
 	if len(stocks) == 0 {
 		return nil
@@ -479,25 +477,32 @@ func (s *StockService) UpdateStockPricesFromTSEWithForce(forceUpdate bool) error
 		}
 		
 		// 更新每個股票的價格
+		successCount := 0
+		errorCount := 0
 		for _, data := range tseData {
 			stockPrice := ConvertTSEToStockPrice(data)
-			fmt.Printf("股票 %s: 原始價格=%s, 解析後價格=%.2f\n", data.Code, data.Price, stockPrice.Price)
 			if stockPrice.Price > 0 { // 只更新有價格的股票
 				err := s.stockRepo.UpdateStockPrice(stockPrice)
 				if err != nil {
-					fmt.Printf("更新股票 %s 價格失敗: %v\n", data.Code, err)
+					errorCount++
 				} else {
-					fmt.Printf("成功更新股票 %s 價格: %.2f\n", data.Code, stockPrice.Price)
+					successCount++
 				}
-			} else {
-				fmt.Printf("跳過股票 %s (價格為0或無效)\n", data.Code)
 			}
+		}
+		
+		// 只記錄批次更新結果
+		if errorCount > 0 {
+			fmt.Printf("批次 %d: 成功更新 %d 支股票，失敗 %d 支\n", i/batchSize+1, successCount, errorCount)
+		} else {
+			fmt.Printf("批次 %d: 成功更新 %d 支股票\n", i/batchSize+1, successCount)
 		}
 		
 		// 避免請求過於頻繁
 		time.Sleep(1 * time.Second)
 	}
 	
+	fmt.Println("股票價格更新完成")
 	return nil
 }
 
@@ -660,7 +665,7 @@ func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 
 // StartAutoUpdate 開始自動更新股票價格（僅交易時間）
 func (s *StockService) StartAutoUpdate() {
-	s.ticker = time.NewTicker(60 * time.Second)
+	s.ticker = time.NewTicker(5 * time.Second)
 	
 	go func() {
 		for {
@@ -686,7 +691,7 @@ func (s *StockService) StartAutoUpdate() {
 		}
 	}()
 	
-	fmt.Println("股票價格自動更新已啟動（每60秒，僅交易時間）")
+	fmt.Println("股票價格自動更新已啟動（每5秒，僅交易時間）")
 }
 
 // isTradingTime 檢查是否在交易時間內
