@@ -1,8 +1,8 @@
 # 使用官方 Go 映像作為構建階段
 FROM golang:1.21-alpine AS builder
 
-# 安裝必要的編譯工具
-RUN apk add --no-cache gcc musl-dev
+# 安裝必要的編譯工具和 Git
+RUN apk add --no-cache gcc musl-dev git
 
 # 設置工作目錄
 WORKDIR /app
@@ -16,8 +16,14 @@ RUN go mod download && go mod tidy
 # 複製源代碼和模板
 COPY . .
 
+# 獲取 Git 資訊並設置構建參數
+RUN git config --global --add safe.directory /app
+ARG GIT_COMMIT=""
+ARG GIT_BRANCH=""
+ARG BUILD_TIME=""
+
 # 整理依賴並構建應用（使用純Go SQLite驅動）
-RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.GitCommit=${GIT_COMMIT} -X main.GitBranch=${GIT_BRANCH} -X main.BuildTime=${BUILD_TIME}" -o main .
 
 # 構建 migration 工具
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o migrate cmd/migrate/main.go

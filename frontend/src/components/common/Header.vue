@@ -14,6 +14,11 @@
       </ul>
       
       <div class="nav-actions">
+        <!-- 版本號顯示 -->
+        <div class="version-info">
+          <span class="version-text">v{{ version }}</span>
+        </div>
+        
         <!-- 購物車圖標 -->
         <CartIcon 
           v-if="isAuthenticated && user?.role === 'customer'"
@@ -48,6 +53,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import CartIcon from '@/components/cart/CartIcon.vue'
+import api from '@/services/api'
 
 export default {
   name: 'Header',
@@ -58,6 +64,7 @@ export default {
     const authStore = useAuthStore()
     const router = useRouter()
     const showDropdown = ref(false)
+    const version = ref('2.0.0')
     
     const isAuthenticated = computed(() => authStore.isAuthenticated)
     const user = computed(() => authStore.user)
@@ -95,6 +102,19 @@ export default {
       }
     }
     
+    // 獲取版本號
+    const loadVersion = async () => {
+      try {
+        const response = await api.get('/api/version/short')
+        if (response.data.success) {
+          version.value = response.data.data.version
+        }
+      } catch (error) {
+        console.error('獲取版本號失敗:', error)
+        // 保持默認版本號
+      }
+    }
+    
     // 點擊外部關閉下拉菜單
     const handleClickOutside = (event) => {
       const dropdown = event.target.closest('.login-dropdown')
@@ -105,6 +125,7 @@ export default {
     
     onMounted(() => {
       document.addEventListener('click', handleClickOutside)
+      loadVersion()
     })
     
     onUnmounted(() => {
@@ -115,6 +136,7 @@ export default {
       isAuthenticated,
       user,
       showDropdown,
+      version,
       toggleDropdown,
       closeDropdown,
       handleMouseEnter,
@@ -173,6 +195,23 @@ export default {
   display: flex;
   gap: 1rem;
   align-items: center;
+}
+
+.version-info {
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+
+.version-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn {

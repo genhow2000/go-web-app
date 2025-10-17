@@ -227,17 +227,35 @@ export default {
         return
       }
 
+      // 防止重複請求
+      if (loading.value && !showLoading) {
+        return
+      }
+
       if (showLoading) {
         loading.value = true
       }
 
       try {
         const response = await api.get(`/api/stock/stocks/${code}`)
-        stock.value = response.data.data
-        lastUpdateTime.value = new Date()
+        const newData = response.data.data
+        
+        // 直接更新數據，不檢查價格是否變化
+        // 這樣可以確保顯示最新的數據，避免回退到舊緩存
+        if (newData) {
+          stock.value = newData
+          lastUpdateTime.value = new Date()
+          
+          if (newData.price) {
+            console.log(`股票 ${code} 數據更新: 價格=${newData.price.price}, 漲跌=${newData.price.change}`)
+          }
+        }
       } catch (error) {
         console.error('載入股票詳情失敗:', error)
-        stock.value = null
+        // 只有在沒有現有數據時才設為null，避免清空已顯示的數據
+        if (!stock.value) {
+          stock.value = null
+        }
       } finally {
         loading.value = false
       }
@@ -245,9 +263,21 @@ export default {
 
     // 開始自動更新
     const startAutoUpdate = () => {
-      // 每5秒更新一次
+      // 每5秒更新一次，但只在交易時間內
       autoUpdateInterval.value = setInterval(() => {
-        loadStockDetail(false) // 不顯示loading
+        const now = new Date()
+        const taiwanTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)) // UTC+8
+        const weekday = taiwanTime.getDay()
+        const hour = taiwanTime.getHours()
+        const minute = taiwanTime.getMinutes()
+        
+        // 只在交易時間內更新（週一至週五 9:00-13:30）
+        const isTradingTime = (weekday >= 1 && weekday <= 5) && 
+                             ((hour >= 9 && hour < 13) || (hour === 13 && minute <= 30))
+        
+        if (isTradingTime) {
+          loadStockDetail(false) // 不顯示loading
+        }
       }, 5000)
     }
 

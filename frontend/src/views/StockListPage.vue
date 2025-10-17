@@ -263,23 +263,22 @@ export default {
         const response = await api.get('/api/stock/stocks', { params })
         const data = response.data.data
         
+        // 直接更新數據，確保顯示最新信息
         stocks.value = data.stocks || []
         pagination.value = data.pagination || pagination.value
         lastUpdateTime.value = new Date()
         
-        // 如果沒有股票價格數據，自動觸發更新
+        // 如果沒有股票價格數據，自動觸發更新（但不重複載入）
         if (stocks.value.length > 0 && !stocks.value[0].price) {
           console.log('檢測到沒有股票價格數據，自動觸發更新...')
           await triggerStockUpdate()
-          // 更新後重新載入數據
-          const retryResponse = await api.get('/api/stock/stocks', { params })
-          const retryData = retryResponse.data.data
-          stocks.value = retryData.stocks || []
-          pagination.value = retryData.pagination || pagination.value
         }
       } catch (error) {
         console.error('載入股票列表失敗:', error)
-        stocks.value = []
+        // 只有在沒有現有數據時才清空，避免清空已顯示的數據
+        if (stocks.value.length === 0) {
+          stocks.value = []
+        }
       } finally {
         loading.value = false
       }

@@ -22,6 +22,7 @@ func SetupRoutes(
 	unifiedAuthService *services.UnifiedAuthService,
 	chatController *controllers.ChatController,
 	oauthController *controllers.OAuthController,
+	versionService *services.VersionService,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -53,6 +54,10 @@ func SetupRoutes(
 			"message": "Service is running",
 		})
 	})
+	
+	// 版本資訊路由（暫時註解，稍後添加）
+	// r.GET("/api/version", versionController.GetVersion)
+	// r.GET("/api/version/short", versionController.GetShortVersion)
 	
 	// 記錄服務器啟動
 	logger.Info("服務器路由初始化完成", logrus.Fields{
@@ -104,6 +109,13 @@ func SetupRoutes(
 	
 	// 初始化購物車服務和控制器
 	cartService := services.NewCartService(database.DB)
+	
+	// 初始化版本控制器
+	versionController := controllers.NewVersionController(versionService)
+	
+	// 版本資訊路由
+	r.GET("/api/version", versionController.GetVersion)
+	r.GET("/api/version/short", versionController.GetShortVersion)
 
 	// Vue.js 前端路由 - 提供所有頁面
 	r.GET("/", func(c *gin.Context) {

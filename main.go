@@ -15,6 +15,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// 構建時注入的變數
+var (
+	GitCommit  string
+	GitBranch  string
+	BuildTime  string
+)
+
 func main() {
 	// 初始化日誌系統
 	logger.Info("Go應用程序啟動", logrus.Fields{
@@ -64,6 +71,14 @@ func main() {
 		"simulation_provider": cfg.AI.SimulationProvider,
 	})
 
+	// 初始化版本服務（使用構建時資訊）
+	versionService := services.NewVersionServiceWithBuildInfo(GitCommit, GitBranch, BuildTime)
+	logger.Info("版本服務初始化完成", logrus.Fields{
+		"git_commit": GitCommit,
+		"git_branch": GitBranch,
+		"build_time": BuildTime,
+	})
+
 	// 初始化 Service
 	unifiedAuthService := services.NewUnifiedAuthService(unifiedUserRepo, &cfg.JWT)
 	unifiedAdminService := services.NewUnifiedAdminService(unifiedUserRepo)
@@ -79,7 +94,7 @@ func main() {
 	logger.Info("Controller層初始化完成")
 
 	// 設置路由
-	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService, chatController, oauthController)
+	router := routes.SetupRoutes(unifiedAuthController, adminController, unifiedAuthService, chatController, oauthController, versionService)
 
 	// 設置 Gin 模式
 	if cfg.Server.Host == "0.0.0.0" {
