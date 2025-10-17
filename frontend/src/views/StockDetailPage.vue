@@ -245,10 +245,10 @@ export default {
 
     // 開始自動更新
     const startAutoUpdate = () => {
-      // 每10秒更新一次
+      // 每5秒更新一次
       autoUpdateInterval.value = setInterval(() => {
         loadStockDetail(false) // 不顯示loading
-      }, 10000)
+      }, 5000)
     }
 
     // 停止自動更新

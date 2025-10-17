@@ -447,7 +447,7 @@ func (s *StockService) UpdateStockPricesFromTSEWithForce(forceUpdate bool) error
 		return fmt.Errorf("獲取股票列表失敗: %w", err)
 	}
 	
-	fmt.Printf("開始更新 %d 支股票價格...\n", len(stocks))
+	fmt.Printf("[%s] 開始更新 %d 支股票價格...\n", time.Now().Format("15:04:05"), len(stocks))
 	
 	if len(stocks) == 0 {
 		return nil
@@ -493,16 +493,16 @@ func (s *StockService) UpdateStockPricesFromTSEWithForce(forceUpdate bool) error
 		
 		// 只記錄批次更新結果
 		if errorCount > 0 {
-			fmt.Printf("批次 %d: 成功更新 %d 支股票，失敗 %d 支\n", i/batchSize+1, successCount, errorCount)
+			fmt.Printf("[%s] 批次 %d: 成功更新 %d 支股票，失敗 %d 支\n", time.Now().Format("15:04:05"), i/batchSize+1, successCount, errorCount)
 		} else {
-			fmt.Printf("批次 %d: 成功更新 %d 支股票\n", i/batchSize+1, successCount)
+			fmt.Printf("[%s] 批次 %d: 成功更新 %d 支股票\n", time.Now().Format("15:04:05"), i/batchSize+1, successCount)
 		}
 		
 		// 避免請求過於頻繁
 		time.Sleep(1 * time.Second)
 	}
 	
-	fmt.Println("股票價格更新完成")
+	fmt.Printf("[%s] 股票價格更新完成\n", time.Now().Format("15:04:05"))
 	return nil
 }
 
@@ -532,7 +532,9 @@ type TSEStockData struct {
 	LowPrice     string  `json:"l"`   // 最低價
 	ClosePrice   string  `json:"y"`   // 昨收價
 	Volume       string  `json:"v"`   // 成交量
-	Amount       string  `json:"a"`   // 成交金額
+	Amount       string  `json:"mt"`  // 成交金額
+	BuyPrices    string  `json:"a"`   // 買盤價格
+	SellPrices   string  `json:"b"`   // 賣盤價格
 	Change       string  `json:"ch"`  // 漲跌（實際上是股票代碼）
 	ChangePercent string `json:"%"`   // 漲跌幅（實際上是時間）
 	Time         string  `json:"t"`   // 時間
@@ -636,9 +638,25 @@ func ConvertTSEToStockPrice(tseData TSEStockData) *models.StockPrice {
 	highPrice := tse.ParseFloat(tseData.HighPrice)
 	lowPrice := tse.ParseFloat(tseData.LowPrice)
 	
-	// 如果現價為空或無效，使用昨收價作為當前價格
-	if currentPrice == 0 && prevClose > 0 {
-		currentPrice = prevClose
+	// 如果現價為空或無效，嘗試從買賣盤價格中獲取當前價格
+	if currentPrice == 0 {
+		// 從買盤價格中獲取第一個有效價格
+		if tseData.BuyPrices != "" {
+			buyPrices := strings.Split(tseData.BuyPrices, "_")
+			for _, priceStr := range buyPrices {
+				if priceStr != "" {
+					currentPrice = tse.ParseFloat(priceStr)
+					if currentPrice > 0 {
+						break
+					}
+				}
+			}
+		}
+		
+		// 如果還是沒有價格，使用昨收價
+		if currentPrice == 0 && prevClose > 0 {
+			currentPrice = prevClose
+		}
 	}
 	
 	// 計算漲跌點數和漲跌幅
@@ -674,7 +692,7 @@ func (s *StockService) StartAutoUpdate() {
 				// 檢查是否在交易時間內（週一至週五 9:00-13:30）
 				now := time.Now()
 				if s.isTradingTime(now) {
-					fmt.Println("開始自動更新股票價格（交易時間）...")
+					fmt.Printf("[%s] 開始自動更新股票價格（交易時間）...\n", now.Format("15:04:05"))
 					err := s.UpdateStockPricesFromTSE()
 					if err != nil {
 						fmt.Printf("自動更新股票價格失敗: %v\n", err)

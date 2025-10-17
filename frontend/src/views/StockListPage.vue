@@ -315,12 +315,12 @@ export default {
 
     // 開始自動更新
     const startAutoUpdate = () => {
-      // 每30秒更新一次（僅在交易時間）
+      // 每5秒更新一次（僅在交易時間）
       autoUpdateInterval.value = setInterval(() => {
         if (isTradingTime()) {
           loadStocks(false) // 不顯示loading
         }
-      }, 30000)
+      }, 5000)
     }
 
     // 停止自動更新
