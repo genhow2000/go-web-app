@@ -326,8 +326,13 @@ func (s *ChatService) GetDatabaseSize() (int64, error) {
 
 // GenerateAIResponse 生成AI回复
 func (s *ChatService) GenerateAIResponse(message, conversationID string, stockContext map[string]interface{}) (string, error) {
-	// 如果有股票上下文，構建更豐富的上下文信息
-	enhancedContext := s.buildEnhancedStockContext(stockContext)
+	// 如果有股票上下文，根據問題類型構建專門的上下文信息
+	var enhancedContext map[string]interface{}
+	if stockContext != nil {
+		enhancedContext = s.buildQuestionSpecificContext(stockContext, message)
+	} else {
+		enhancedContext = s.buildEnhancedStockContext(stockContext)
+	}
 	
 	// 使用AI管理器生成回复
 	if s.aiManager != nil {
@@ -366,6 +371,131 @@ func (s *ChatService) buildEnhancedStockContext(stockContext map[string]interfac
 			"股價波動性分析",
 		},
 		"context_note": "請基於查詢到的歷史數據進行深入分析，提供專業的投資建議和風險評估。",
+	}
+	
+	return enhanced
+}
+
+// buildQuestionSpecificContext 根據問題類型構建專門的股票上下文
+func (s *ChatService) buildQuestionSpecificContext(stockContext map[string]interface{}, message string) map[string]interface{} {
+	if stockContext == nil {
+		return nil
+	}
+	
+	// 複製原始上下文
+	enhanced := make(map[string]interface{})
+	for k, v := range stockContext {
+		enhanced[k] = v
+	}
+	
+	// 根據問題類型添加專門的查詢指令
+	message = strings.ToLower(message)
+	
+	if strings.Contains(message, "值得買") || strings.Contains(message, "投資建議") {
+		// 投資建議問題 - 重點關注基本面、市場趨勢、估值分析
+		enhanced["query_instructions"] = map[string]interface{}{
+			"should_query_history": true,
+			"question_type": "investment_advice",
+			"query_periods": []string{
+				"最近1個月的股價表現",
+				"最近3個月的業績變化",
+				"最近1年的財務數據",
+				"同業比較分析",
+			},
+			"analysis_focus": []string{
+				"基本面分析（營收、獲利、成長性）",
+				"估值分析（本益比、股價淨值比）",
+				"產業趨勢和競爭優勢",
+				"技術面支撐和阻力位",
+				"市場情緒和資金流向",
+			},
+			"context_note": "請提供綜合性的投資建議，包含基本面、技術面、估值分析，並給出明確的買入/持有/賣出建議。",
+		}
+	} else if strings.Contains(message, "技術指標") || strings.Contains(message, "技術分析") {
+		// 技術指標問題 - 重點關注技術分析、圖表形態、指標信號
+		enhanced["query_instructions"] = map[string]interface{}{
+			"should_query_history": true,
+			"question_type": "technical_analysis",
+			"query_periods": []string{
+				"最近1週的股價走勢",
+				"最近1個月的技術指標變化",
+				"最近3個月的圖表形態",
+				"最近6個月的支撐阻力位",
+			},
+			"analysis_focus": []string{
+				"RSI相對強弱指標分析",
+				"MACD動量指標分析",
+				"KD隨機指標分析",
+				"移動平均線系統分析",
+				"布林帶通道分析",
+				"成交量指標分析",
+				"圖表形態識別",
+			},
+			"context_note": "請提供詳細的技術指標分析，包含各項指標的數值、信號、趨勢判斷，並預測短期股價走勢。",
+		}
+	} else if strings.Contains(message, "風險") || strings.Contains(message, "風險評估") {
+		// 風險分析問題 - 重點關注風險因子、波動性、風險控制
+		enhanced["query_instructions"] = map[string]interface{}{
+			"should_query_history": true,
+			"question_type": "risk_analysis",
+			"query_periods": []string{
+				"最近1個月的股價波動",
+				"最近3個月的風險事件",
+				"最近1年的最大回撤",
+				"歷史風險事件分析",
+			},
+			"analysis_focus": []string{
+				"股價波動性分析（標準差、Beta值）",
+				"流動性風險評估",
+				"基本面風險因子",
+				"市場風險和系統性風險",
+				"公司特定風險",
+				"產業風險和政策風險",
+				"風險控制建議",
+			},
+			"context_note": "請提供全面的風險評估，包含各種風險因子的識別、量化分析，並給出風險控制建議。",
+		}
+	} else if strings.Contains(message, "基本面") || strings.Contains(message, "基本面分析") {
+		// 基本面分析問題 - 重點關注財務數據、業績表現、產業分析
+		enhanced["query_instructions"] = map[string]interface{}{
+			"should_query_history": true,
+			"question_type": "fundamental_analysis",
+			"query_periods": []string{
+				"最近1季的財報數據",
+				"最近1年的業績表現",
+				"最近3年的成長趨勢",
+				"產業比較分析",
+			},
+			"analysis_focus": []string{
+				"財務報表分析（損益表、資產負債表、現金流量表）",
+				"獲利能力分析（毛利率、營業利益率、淨利率）",
+				"成長性分析（營收成長、獲利成長）",
+				"財務結構分析（負債比率、流動比率）",
+				"產業地位和競爭優勢",
+				"管理層品質和公司治理",
+				"未來展望和成長動能",
+			},
+			"context_note": "請提供深入的基本面分析，包含財務數據解讀、業績趨勢分析、產業比較，並評估公司內在價值。",
+		}
+	} else {
+		// 預設處理 - 綜合分析
+		enhanced["query_instructions"] = map[string]interface{}{
+			"should_query_history": true,
+			"question_type": "general_analysis",
+			"query_periods": []string{
+				"最近1週的股價走勢",
+				"最近1個月的股價表現", 
+				"最近3個月的技術指標變化",
+				"最近1年的股價波動範圍",
+			},
+			"analysis_focus": []string{
+				"技術指標分析（RSI、MACD、KD、移動平均線）",
+				"支撐位和阻力位分析",
+				"成交量變化趨勢",
+				"股價波動性分析",
+			},
+			"context_note": "請基於查詢到的歷史數據進行深入分析，提供專業的投資建議和風險評估。",
+		}
 	}
 	
 	return enhanced

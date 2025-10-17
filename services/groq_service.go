@@ -222,21 +222,73 @@ func (s *GroqService) buildEnhancedPrompt(message string, stockContext map[strin
 	// 檢查是否有查詢指令
 	queryInstructions, hasInstructions := stockContext["query_instructions"].(map[string]interface{})
 	
-	// 構建簡化的提示詞
+	// 構建專門的提示詞
 	prompt := fmt.Sprintf("你是專業股票分析師。分析股票：%s\n\n", stockInfo)
 	
 	if hasInstructions {
 		shouldQuery, _ := queryInstructions["should_query_history"].(bool)
+		questionType, _ := queryInstructions["question_type"].(string)
+		contextNote, _ := queryInstructions["context_note"].(string)
+		
 		if shouldQuery {
-			prompt += "請模擬搜尋台灣證交所、Yahoo Finance等資料源，提供：\n"
-			prompt += "• 技術指標分析（RSI、MACD、KD、移動平均線）\n"
-			prompt += "• 支撐位和阻力位分析\n"
-			prompt += "• 投資風險評估和建議\n"
+			prompt += "請模擬搜尋台灣證交所、Yahoo Finance、鉅亨網等資料源，提供專業分析：\n\n"
+			
+			// 根據問題類型提供專門的分析指導
+			switch questionType {
+			case "investment_advice":
+				prompt += "**投資建議分析重點：**\n"
+				prompt += "• 基本面分析（營收、獲利、成長性、估值）\n"
+				prompt += "• 技術面支撐和阻力位分析\n"
+				prompt += "• 產業趨勢和競爭優勢評估\n"
+				prompt += "• 市場情緒和資金流向分析\n"
+				prompt += "• 給出明確的買入/持有/賣出建議\n\n"
+				
+			case "technical_analysis":
+				prompt += "**技術指標分析重點：**\n"
+				prompt += "• RSI相對強弱指標分析（數值、信號、趨勢）\n"
+				prompt += "• MACD動量指標分析（金叉死叉、背離）\n"
+				prompt += "• KD隨機指標分析（超買超賣、交叉信號）\n"
+				prompt += "• 移動平均線系統分析（多空排列、支撐阻力）\n"
+				prompt += "• 布林帶通道分析（突破、收斂、擴張）\n"
+				prompt += "• 成交量指標分析（量價關係、資金流向）\n"
+				prompt += "• 圖表形態識別（頭肩頂底、三角形、旗形等）\n\n"
+				
+			case "risk_analysis":
+				prompt += "**風險評估分析重點：**\n"
+				prompt += "• 股價波動性分析（標準差、Beta值、最大回撤）\n"
+				prompt += "• 流動性風險評估（成交量、買賣價差）\n"
+				prompt += "• 基本面風險因子（財務結構、獲利穩定性）\n"
+				prompt += "• 市場風險和系統性風險\n"
+				prompt += "• 公司特定風險（管理層、治理結構）\n"
+				prompt += "• 產業風險和政策風險\n"
+				prompt += "• 風險控制建議和停損點設定\n\n"
+				
+			case "fundamental_analysis":
+				prompt += "**基本面分析重點：**\n"
+				prompt += "• 財務報表分析（損益表、資產負債表、現金流量表）\n"
+				prompt += "• 獲利能力分析（毛利率、營業利益率、淨利率）\n"
+				prompt += "• 成長性分析（營收成長、獲利成長、ROE/ROA）\n"
+				prompt += "• 財務結構分析（負債比率、流動比率、速動比率）\n"
+				prompt += "• 產業地位和競爭優勢評估\n"
+				prompt += "• 管理層品質和公司治理\n"
+				prompt += "• 未來展望和成長動能分析\n\n"
+				
+			default:
+				prompt += "• 技術指標分析（RSI、MACD、KD、移動平均線）\n"
+				prompt += "• 支撐位和阻力位分析\n"
+				prompt += "• 投資風險評估和建議\n"
+			}
+			
+			// 添加專門的上下文說明
+			if contextNote != "" {
+				prompt += fmt.Sprintf("**分析要求：** %s\n\n", contextNote)
+			}
+			
 			prompt += "• 包含免責聲明\n\n"
 		}
 	}
 	
-	prompt += fmt.Sprintf("問題：%s", message)
+	prompt += fmt.Sprintf("**用戶問題：** %s", message)
 	
 	return prompt
 }
