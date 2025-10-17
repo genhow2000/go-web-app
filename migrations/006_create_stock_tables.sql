@@ -76,6 +76,7 @@ INSERT OR IGNORE INTO stocks (code, name, category, market) VALUES
 ('1303', '南亞', 'INDUSTRY', 'TSE'),
 ('2002', '中鋼', 'INDUSTRY', 'TSE'),
 ('2412', '中華電', 'ELECTRONICS', 'TSE'),
+('2408', '南亞科', 'ELECTRONICS', 'TSE'),
 ('2891', '中信金', 'FINANCE', 'TSE'),
 ('2886', '兆豐金', 'FINANCE', 'TSE'),
 ('2884', '玉山金', 'FINANCE', 'TSE'),

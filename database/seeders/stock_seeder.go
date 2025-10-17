@@ -60,6 +60,7 @@ func SeedStockData(db *sql.DB) error {
 		{"2376", "技嘉", "ELECTRONICS", "TSE"},
 		{"2324", "仁寶", "ELECTRONICS", "TSE"},
 		{"2382", "廣達", "ELECTRONICS", "TSE"},
+		{"2408", "南亞科", "ELECTRONICS", "TSE"},
 		
 		// 金融股
 		{"2881", "富邦金", "FINANCE", "TSE"},
