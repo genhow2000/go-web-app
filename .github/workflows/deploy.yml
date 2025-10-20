@@ -38,8 +38,22 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          echo "Building Docker image..."
-          docker build -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
+          # 獲取 Git 資訊
+          GIT_COMMIT=$GITHUB_SHA
+          GIT_BRANCH=${GITHUB_REF#refs/heads/}
+          BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          echo "Building Docker image with:"
+          echo "Git Commit: $GIT_COMMIT"
+          echo "Git Branch: $GIT_BRANCH" 
+          echo "Build Time: $BUILD_TIME"
+          
+          docker build \
+            --build-arg GIT_COMMIT="$GIT_COMMIT" \
+            --build-arg GIT_BRANCH="$GIT_BRANCH" \
+            --build-arg BUILD_TIME="$BUILD_TIME" \
+            -t gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA .
+          
           echo "Pushing Docker image..."
           docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
           echo "Docker image pushed successfully!"

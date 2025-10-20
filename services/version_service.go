@@ -84,15 +84,11 @@ func (vs *VersionService) GetVersionInfo() *VersionInfo {
 func (vs *VersionService) GetShortVersion() string {
 	info := vs.GetVersionInfo()
 	
-	// 如果有 Git commit，使用 commit hash 作為版本號
+	// 如果有 Git commit，直接返回 commit hash
 	if info.GitCommit != "" {
-		return info.Version + "-" + info.GitCommit
+		return info.GitCommit
 	}
 	
-	// 如果有 Git branch 且不是 main/master，包含 branch 資訊
-	if info.GitBranch != "" && info.GitBranch != "main" && info.GitBranch != "master" {
-		return info.Version + "-" + info.GitBranch
-	}
-	
+	// 如果沒有 Git commit，返回版本號
 	return info.Version
 }
