@@ -1,15 +1,36 @@
 steps:
+  # 獲取 Git 資訊
+  - name: "gcr.io/cloud-builders/git"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Git Commit: $$(git rev-parse HEAD)"
+        echo "Git Branch: $$(git rev-parse --abbrev-ref HEAD)"
+        echo "Build Time: $$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        echo "$$(git rev-parse HEAD)" > /workspace/git_commit.txt
+        echo "$$(git rev-parse --abbrev-ref HEAD)" > /workspace/git_branch.txt
+        echo "$$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /workspace/build_time.txt
+
   # 構建 Docker 映像
   - name: "gcr.io/cloud-builders/docker"
+    entrypoint: "bash"
     args:
-      [
-        "build",
-        "-f",
-        "Dockerfile",
-        "-t",
-        "gcr.io/fleet-day-383710/go-app:latest",
-        ".",
-      ]
+      - "-c"
+      - |
+        GIT_COMMIT=$$(cat /workspace/git_commit.txt)
+        GIT_BRANCH=$$(cat /workspace/git_branch.txt)
+        BUILD_TIME=$$(cat /workspace/build_time.txt)
+        echo "Building with Git Commit: $$GIT_COMMIT"
+        echo "Building with Git Branch: $$GIT_BRANCH"
+        echo "Building with Build Time: $$BUILD_TIME"
+        docker build \
+          --build-arg GIT_COMMIT="$$GIT_COMMIT" \
+          --build-arg GIT_BRANCH="$$GIT_BRANCH" \
+          --build-arg BUILD_TIME="$$BUILD_TIME" \
+          -f Dockerfile \
+          -t gcr.io/fleet-day-383710/go-app:latest \
+          .
 
   # 推送映像到 Container Registry
   - name: "gcr.io/cloud-builders/docker"
