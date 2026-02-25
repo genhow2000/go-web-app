@@ -159,6 +159,7 @@ export default {
       totalAmount: null
     })
     const autoUpdateInterval = ref(null)
+    const hasUpdatedToday = ref(false)
     const lastUpdateTime = ref(null)
 
     // 獲取熱門股票
@@ -204,31 +205,42 @@ export default {
       }
     }
 
-    // 檢查是否為交易時間
-    const isTradingTime = () => {
+    // 檢查是否為當天下午 2:31（台灣時間）
+    const isDailyUpdateTime = () => {
       const now = new Date()
       const taiwanTime = new Date(now.getTime() + (8 * 60 * 60 * 1000)) // UTC+8
-      const weekday = taiwanTime.getDay()
       const hour = taiwanTime.getHours()
       const minute = taiwanTime.getMinutes()
-      
-      // 週一至週五 9:00-13:30
-      if (weekday >= 1 && weekday <= 5) {
-        if (hour >= 9 && hour < 13) return true
-        if (hour === 13 && minute <= 30) return true
-      }
-      return false
+      return hour === 14 && minute === 31
     }
 
-    // 開始自動更新
+    // 開始每日自動更新（每天下午 2:31 執行一次）
     const startAutoUpdate = () => {
-      // 每5秒更新一次（僅在交易時間）
+      // 先根據今天日期初始化旗標
+      hasUpdatedToday.value = false
+
+      // 每 1 分鐘檢查一次是否到更新時間
       autoUpdateInterval.value = setInterval(() => {
-        if (isTradingTime()) {
+        const now = new Date()
+        const taiwanTime = new Date(now.getTime() + (8 * 60 * 60 * 1000))
+        const currentDateKey = taiwanTime.toISOString().slice(0, 10) // YYYY-MM-DD
+
+        // 如果是新的一天，重置更新旗標
+        if (lastUpdateTime.value) {
+          const lastDateKey = lastUpdateTime.value.toISOString().slice(0, 10)
+          if (lastDateKey !== currentDateKey) {
+            hasUpdatedToday.value = false
+          }
+        } else {
+          hasUpdatedToday.value = false
+        }
+
+        if (!hasUpdatedToday.value && isDailyUpdateTime()) {
           fetchHotStocks()
           fetchMarketData()
+          hasUpdatedToday.value = true
         }
-      }, 5000)
+      }, 60000)
     }
 
     // 停止自動更新
