@@ -51,12 +51,19 @@ func (c *OAuthController) LineLogin(ctx *gin.Context) {
 	// 生成state參數防止CSRF攻擊
 	state := generateRandomState()
 	
+	// 判斷是否為 HTTPS，用來決定是否加上 Secure 屬性
+	isSecure := ctx.Request.TLS != nil || ctx.GetHeader("X-Forwarded-Proto") == "https"
+
 	// 將state存儲到cookie中，避免多實例問題
-	// 對於 Cloud Run，不需要設定 Domain，讓瀏覽器自動處理
-	// 使用 SameSite=Lax 來確保跨站重定向時 Cookie 能被發送
-	// 添加多個 Cookie 設定來確保兼容性
-	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=Lax", state))
-	ctx.Header("Set-Cookie", fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; Secure; SameSite=Lax", state))
+	// 不設定 Domain，讓瀏覽器自動處理；使用 SameSite=Lax 來支援跨站重定向
+	baseCookie := fmt.Sprintf("oauth_state=%s; Path=/; Max-Age=600; SameSite=Lax", state)
+	if isSecure {
+		// 線上 HTTPS 環境：加上 Secure 與 HttpOnly
+		ctx.Header("Set-Cookie", baseCookie+"; Secure; HttpOnly")
+	} else {
+		// 本地開發 HTTP 環境：不能加 Secure，否則瀏覽器不會帶 cookie 回來，導致 state 驗證失敗
+		ctx.Header("Set-Cookie", baseCookie+"; HttpOnly")
+	}
 	
 	// 重定向到LINE授權頁面
 	authURL := c.oauthService.GetLineAuthURL(state)
